@@ -1,16 +1,8 @@
-# Real-Time Earthquake Visualizer 🌎
+# Earthquake Visualizer 🌎
 
 An interactive, standalone web application that visualizes recent earthquake data from around the world on a responsive map.
 
-![Earthquake Visualizer Screenshot]([https://i.imgur.com/your-screenshot.png](https://github.com/jaysonragasa/vibe_earthquakevisual/blob/main/Screenshot%202025-08-21%20232310.png?raw=true)) 
-
----
-
-## 🚀 Live Demo
-
-**(Link to your live demo here)**
-
----
+![Earthquake Visualizer Screenshot](https://raw.githubusercontent.com/jaysonragasa/vibe_earthquakevisual/refs/heads/main/Screenshot%202025-08-21%20232310.png) 
 
 ## ✨ Features
 
@@ -39,22 +31,6 @@ This application provides a rich, interactive experience for exploring seismic d
 
 ---
 
-## 🛠️ How to Use
-
-This is a standalone web application with no build process required.
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    ```
-2.  **Navigate to the directory:**
-    ```bash
-    cd your-repo-name
-    ```
-3.  **Open the `index.html` file** in your web browser. That's it!
-
----
-
 ## 📊 Data Source
 
 This visualizer uses the **U.S. Geological Survey (USGS) Earthquake Catalog API** for real-time and historical earthquake data.
@@ -73,3 +49,4 @@ Country and city data for the dropdown filters is sourced from the [countries-st
 -   **Leaflet.js**: An open-source JavaScript library for interactive maps.
 -   **Leaflet.heat**: A plugin for creating heatmaps on Leaflet maps.
 -   **OpenStreetMap & Esri**: For the base map tile layers.
+
