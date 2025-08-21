@@ -205,6 +205,9 @@
                         <option value="">All Cities</option>
                     </select>
                 </div>
+                <button id="refresh-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-md hover:bg-indigo-700 transition duration-300 mt-4">
+                    Refresh Data
+                </button>
             </div>
         </div>
     </div>
@@ -248,6 +251,7 @@
         const mapStyleSwitch = document.getElementById('map-style-switch');
         const controlsContainer = document.getElementById('controls-container');
         const sheetToggle = document.getElementById('sheet-toggle');
+        const refreshBtn = document.getElementById('refresh-btn');
 
         // --- BOTTOM SHEET & THEME ---
         sheetToggle.addEventListener('click', () => {
@@ -445,6 +449,7 @@
         });
 
         cityFilterEl.addEventListener('change', applyFilters);
+        refreshBtn.addEventListener('click', fetchEarthquakes);
 
         // --- INITIAL LOAD ---
         fetchCountryCityData();
