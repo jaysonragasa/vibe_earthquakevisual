@@ -2,8 +2,7 @@
 
 An interactive, standalone web application that visualizes recent earthquake data from around the world on a responsive map.
 
-![Earthquake Visualizer Screenshot](https://i.imgur.com/your-screenshot.png) 
-*(Replace this with a screenshot or GIF of your application)*
+![Earthquake Visualizer Screenshot]([https://i.imgur.com/your-screenshot.png](https://github.com/jaysonragasa/vibe_earthquakevisual/blob/main/Screenshot%202025-08-21%20232310.png?raw=true)) 
 
 ---
 
