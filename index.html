@@ -139,11 +139,67 @@
         .slider.round:before { border-radius: 50%; }
 
         /* Legend Styles */
-        .legend { padding: 10px; font-size: 14px; line-height: 23px; border-radius: 5px;}
-        .legend h4 { margin-top: 0; margin-bottom: 5px; font-weight: bold; }
-        .legend i { width: 20px; height: 20px; float: left; margin-right: 8px; opacity: 0.9; border-radius: 50%; }
-        body:not(.dark) .legend { background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); color: #333; }
-        .dark .legend { background: #1f2937; color: #f9fafb; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .legend-container {
+            transition: all 0.3s ease-in-out;
+        }
+        .legend-content {
+            padding: 10px;
+            font-size: 14px;
+            line-height: 23px;
+            border-radius: 5px;
+        }
+        .legend-content h4 { margin-top: 0; margin-bottom: 5px; font-weight: bold; }
+        .legend-content i { width: 20px; height: 20px; float: left; margin-right: 8px; opacity: 0.9; border-radius: 50%; }
+        
+        #legend-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            float: right;
+            margin: 5px;
+        }
+        #legend-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Light Mode Legend */
+        body:not(.dark) .legend-content { background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); color: #333; }
+        body:not(.dark) #legend-toggle { background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        body:not(.dark) #legend-toggle svg { fill: #333; }
+        
+        /* Dark Mode Legend */
+        .dark .legend-content { background: #1f2937; color: #f9fafb; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .dark #legend-toggle { background: #1f2937; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .dark #legend-toggle svg { fill: #f9fafb; }
+        
+        /* Mobile Collapsible Legend */
+        @media (max-width: 767px) {
+            .leaflet-bottom.leaflet-right {
+                bottom: 4.5rem; /* Raise legend above bottom sheet handle */
+            }
+            .legend-content {
+                max-height: 0;
+                overflow: hidden;
+                padding: 0 10px;
+                transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+                float: right;
+                clear: both;
+            }
+            .legend-container.expanded .legend-content {
+                max-height: 300px; /* Adjust as needed */
+                padding: 10px;
+            }
+        }
+        @media (min-width: 768px) {
+            #legend-toggle {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -407,17 +463,16 @@
         }
         
         function getMagnitudeColor(mag) {
-			if (mag < 3) return '#ff073a';  // Neon Red
-			if (mag < 4) return '#ff9e00';  // Neon Orange
-			if (mag < 5) return '#f9ff00';  // Neon Yellow
-			if (mag < 6) return '#39ff14';  // Neon Green
-			if (mag < 7) return '#00f5ff';  // Neon Cyan
-			if (mag < 8) return '#004dff';  // Neon Blue
-			if (mag < 9) return '#8f00ff';  // Neon Violet
-			if (mag < 10) return '#ff00ff'; // Neon Magenta
-			if (mag < 11) return '#ff1493'; // Neon Pink (hot pink, distinct from magenta)
-			return '#ffffff';               // Neon White (fallback, max magnitude)
-		}
+            if (mag < 3) return '#ff073a';  // Neon Red
+            if (mag < 4) return '#ff9e00';  // Neon Orange
+            if (mag < 5) return '#f9ff00';  // Neon Yellow
+            if (mag < 6) return '#39ff14';  // Neon Green
+            if (mag < 7) return '#00f5ff';  // Neon Cyan
+            if (mag < 8) return '#004dff';  // Neon Blue
+            if (mag < 9) return '#8f00ff';  // Neon Violet
+            if (mag < 10) return '#ff00ff'; // Neon Magenta
+            return '#ff1493'; // Neon Pink (hot pink, distinct from magenta)
+        }
         
         function getMagnitudeRadius(mag) {
             return 1 + (Math.floor(mag) * 1.3);
@@ -426,17 +481,33 @@
         // --- LEGEND CONTROL ---
         const legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
-            const div = L.DomUtil.create('div', 'legend');
+            const container = L.DomUtil.create('div', 'legend-container');
+            const toggle = L.DomUtil.create('div', '', container);
+            const content = L.DomUtil.create('div', 'legend-content', container);
+
+            toggle.id = 'legend-toggle';
+            toggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
+            
             const grades = [0, 3, 4, 5, 6, 7, 8, 9, 10];
-            div.innerHTML += '<h4>Magnitude</h4>';
+            let contentHTML = '<h4>Magnitude</h4>';
             for (let i = 0; i < grades.length; i++) {
                 const from = grades[i];
                 const to = grades[i + 1];
                 let labelText = from + (to ? '&ndash;' + (to - 0.1).toFixed(1) : '+');
-                div.innerHTML += '<i style="background:' + getMagnitudeColor(from + 0.1) + ';"></i> ' + labelText + '<br>';
+                contentHTML += '<i style="background:' + getMagnitudeColor(from + 0.1) + ';"></i> ' + labelText + '<br>';
             }
-            div.innerHTML += '<br><small>Circle size represents magnitude.</small>';
-            return div;
+            contentHTML += '<br><small>Circle size represents magnitude.</small>';
+            content.innerHTML = contentHTML;
+
+            L.DomEvent.on(toggle, 'click', function(e) {
+                L.DomEvent.stop(e);
+                container.classList.toggle('expanded');
+            });
+            
+            // Prevent map interactions when clicking on the legend
+            L.DomEvent.disableClickPropagation(container);
+
+            return container;
         };
         legend.addTo(map);
 
