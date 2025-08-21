@@ -1,4 +1,4 @@
-# Earthquake Visualizer 🌎
+# Earthquake Heatmap Visualizer 🌎
 
 An interactive, standalone web application that visualizes recent earthquake data from around the world on a responsive map.
 
