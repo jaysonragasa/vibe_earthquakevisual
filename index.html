@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Earthquakes Visualizer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Basic Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column; /* Default to column for mobile */
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.3s;
+            overflow: hidden; /* Prevent body scroll */
+        }
+        #map {
+            height: 100%;
+            flex-grow: 1;
+            z-index: 1;
+        }
+        #controls-container {
+            /* Mobile Bottom Sheet Styles */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            transform: translateY(calc(100% - 4rem)); /* Start collapsed, showing handle area */
+            transition: transform 0.3s ease-in-out;
+        }
+        #controls-container.is-open {
+            transform: translateY(0); /* Fully visible */
+        }
+        #controls {
+            height: 75vh;
+            overflow-y: auto;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            position: relative;
+            /* Hide scrollbar */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        #controls::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        #sheet-toggle {
+            padding-top: 6px;
+            padding-bottom: 23px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        #sheet-handle-bar {
+            width: 50px;
+            height: 5px;
+            border-radius: 2.5px;
+        }
+        
+        .control-group {
+            padding-bottom: 15px;
+        }
+
+        /* Desktop Sidebar Styles */
+        @media (min-width: 768px) {
+            body {
+                flex-direction: row;
+            }
+            #controls-container {
+                position: static;
+                transform: none;
+                width: 380px;
+                height: 100vh;
+            }
+            #controls {
+                height: 100%;
+                border-radius: 0;
+                padding: 0rem;
+                box-shadow: none;
+            }
+            #sheet-toggle {
+                display: none;
+            }
+        }
+
+        /* Light Mode */
+        body { background-color: #f0f2f5; }
+        #controls { background-color: white; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
+        #sheet-handle-bar { background-color: #d1d5db; }
+        label { color: #374151; }
+        input, select { background-color: white; border: 1px solid #d1d5db; color: #111827; }
+        input:focus, select:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        .leaflet-tile { filter: none; }
+
+        /* Dark Mode */
+        .dark body { background-color: #111827; }
+        .dark #controls { background-color: #1f2937; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
+        .dark #sheet-handle-bar { background-color: #4b5563; }
+        .dark label { color: #d1d5db; }
+        .dark h1 { color: #f9fafb; }
+        .dark input, .dark select { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
+        .dark input:focus, .dark select:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3); }
+        .dark .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        .dark .map-is-satellite .leaflet-tile { filter: brightness(0.9) contrast(1.1); }
+        .dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip { background: #2d3748; color: #e2e8f0; }
+
+        /* Loading Indicator */
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            z-index: 2000;
+            font-weight: 600;
+            display: none;
+        }
+        body:not(.dark) #loading { background: rgba(255, 255, 255, 0.9); color: #111827; }
+        .dark #loading { background: rgba(31, 41, 55, 0.9); color: #f9fafb; }
+        
+        /* Theme Toggle Switch */
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; }
+        input:checked + .slider { background-color: #4f46e5; }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .slider.round { border-radius: 24px; }
+        .slider.round:before { border-radius: 50%; }
+
+        /* Legend Styles */
+        .legend { padding: 10px; font-size: 14px; line-height: 23px; border-radius: 5px;}
+        .legend h4 { margin-top: 0; margin-bottom: 5px; font-weight: bold; }
+        .legend i { width: 20px; height: 20px; float: left; margin-right: 8px; opacity: 0.9; border-radius: 50%; }
+        body:not(.dark) .legend { background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); color: #333; }
+        .dark .legend { background: #1f2937; color: #f9fafb; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div id="controls-container">
+        <div id="controls" class="p-6 md:p-0">
+            <div id="sheet-toggle">
+                <div id="sheet-handle-bar"></div>
+            </div>
+            <div class="controls-content px-6 pb-6 md:p-6">
+                <h1 class="text-2xl font-bold mb-4">Earthquake Visualizer</h1>
+
+                <div class="theme-switch-wrapper">
+                    <label for="theme-switch">Dark Mode</label>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="theme-switch" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="theme-switch-wrapper">
+                    <label for="map-style-switch">Terrain View</label>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="map-style-switch">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <label for="start-date">Start Date</label>
+                    <input type="date" id="start-date" class="w-full p-2 border rounded-md">
+                </div>
+
+                <div class="control-group">
+                    <label for="end-date">End Date</label>
+                    <input type="date" id="end-date" class="w-full p-2 border rounded-md">
+                </div>
+
+                <div class="control-group">
+                    <label for="min-magnitude">Min Magnitude</label>
+                    <input type="number" id="min-magnitude" min="0" max="10" step="0.1" value="2.5" class="w-full p-2 border rounded-md">
+                </div>
+
+                <div class="control-group">
+                    <label for="max-magnitude">Max Magnitude</label>
+                    <input type="number" id="max-magnitude" min="0" max="10" step="0.1" value="10" class="w-full p-2 border rounded-md">
+                </div>
+                
+                <div class="control-group">
+                    <label for="country-filter">Country</label>
+                    <select id="country-filter" class="w-full p-2 border rounded-md">
+                        <option value="">All Countries</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="city-filter">City</label>
+                    <select id="city-filter" class="w-full p-2 border rounded-md" disabled>
+                        <option value="">All Cities</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading">Loading earthquake data...</div>
+
+    <script>
+        // --- INITIALIZATION ---
+        const mapEl = document.getElementById('map');
+        const map = L.map(mapEl, {
+            zoomControl: false // We will add it back in a different position
+        }).setView([20, 0], 2);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
+
+        const terrainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        satelliteLayer.addTo(map);
+        mapEl.classList.add('map-is-satellite');
+
+        let heatLayer = null;
+        let earthquakeMarkers = L.layerGroup().addTo(map);
+        let allEarthquakes = [];
+        let countriesData = [];
+        let citiesData = [];
+
+        // --- DOM ELEMENT REFERENCES ---
+        const startDateEl = document.getElementById('start-date');
+        const endDateEl = document.getElementById('end-date');
+        const minMagEl = document.getElementById('min-magnitude');
+        const maxMagEl = document.getElementById('max-magnitude');
+        const countryFilterEl = document.getElementById('country-filter');
+        const cityFilterEl = document.getElementById('city-filter');
+        const loadingEl = document.getElementById('loading');
+        const themeSwitch = document.getElementById('theme-switch');
+        const mapStyleSwitch = document.getElementById('map-style-switch');
+        const controlsContainer = document.getElementById('controls-container');
+        const sheetToggle = document.getElementById('sheet-toggle');
+
+        // --- BOTTOM SHEET & THEME ---
+        sheetToggle.addEventListener('click', () => {
+            controlsContainer.classList.toggle('is-open');
+        });
+        themeSwitch.addEventListener('change', () => {
+            document.documentElement.classList.toggle('dark', themeSwitch.checked);
+        });
+        mapStyleSwitch.addEventListener('change', () => {
+            if (mapStyleSwitch.checked) {
+                map.removeLayer(satelliteLayer);
+                map.addLayer(terrainLayer);
+                mapEl.classList.remove('map-is-satellite');
+            } else {
+                map.removeLayer(terrainLayer);
+                map.addLayer(satelliteLayer);
+                mapEl.classList.add('map-is-satellite');
+            }
+        });
+
+
+        // --- DATE INITIALIZATION ---
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        startDateEl.value = startOfMonth.toISOString().split('T')[0];
+        endDateEl.value = today.toISOString().split('T')[0];
+        
+        // --- DATA FETCHING ---
+        async function fetchCountryCityData() {
+            try {
+                const [countriesRes, citiesRes] = await Promise.all([
+                    fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries.json'),
+                    fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/cities.json')
+                ]);
+                countriesData = await countriesRes.json();
+                citiesData = await citiesRes.json();
+                populateCountries();
+            } catch (error) {
+                console.error("Error fetching country/city data:", error);
+            }
+        }
+
+        async function fetchEarthquakes() {
+            loadingEl.style.display = 'block';
+            const startDate = startDateEl.value;
+            const endDate = endDateEl.value;
+            const minMag = minMagEl.value;
+            const maxMag = maxMagEl.value;
+            
+            const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${startDate}&endtime=${endDate}&minmagnitude=${minMag}&maxmagnitude=${maxMag}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                allEarthquakes = data.features;
+                applyFilters();
+            } catch (error) {
+                console.error("Error fetching earthquake data:", error);
+                loadingEl.textContent = "Could not fetch data.";
+                setTimeout(() => { loadingEl.style.display = 'none'; loadingEl.textContent = 'Loading...'; }, 3000);
+            } finally {
+                if(loadingEl.textContent.includes('Loading')) {
+                    loadingEl.style.display = 'none';
+                }
+            }
+        }
+
+        // --- UI POPULATION ---
+        function populateCountries() {
+            countriesData.sort((a, b) => a.name.localeCompare(b.name));
+            countriesData.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.iso2;
+                option.textContent = country.name;
+                countryFilterEl.appendChild(option);
+            });
+        }
+
+        function populateCities(countryCode) {
+            cityFilterEl.innerHTML = '<option value="">All Cities</option>';
+            if (!countryCode) {
+                cityFilterEl.disabled = true;
+                return;
+            }
+            const countryCities = citiesData.filter(city => city.country_code === countryCode);
+            countryCities.sort((a, b) => a.name.localeCompare(b.name));
+            countryCities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.name;
+                option.textContent = city.name;
+                cityFilterEl.appendChild(option);
+            });
+            cityFilterEl.disabled = false;
+        }
+
+        // --- MAP & FILTER LOGIC ---
+        function applyFilters() {
+            let filteredEarthquakes = [...allEarthquakes];
+            const selectedCountry = countryFilterEl.options[countryFilterEl.selectedIndex].text;
+            const selectedCity = cityFilterEl.value;
+
+            if (selectedCountry && countryFilterEl.value) {
+                filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place && eq.properties.place.toLowerCase().includes(selectedCountry.toLowerCase()));
+            }
+            if (selectedCity) {
+                 filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place && eq.properties.place.toLowerCase().includes(selectedCity.toLowerCase()));
+            }
+            updateMap(filteredEarthquakes);
+        }
+
+        function updateMap(earthquakes) {
+            const mapSize = map.getSize();
+            if (mapSize.x === 0 || mapSize.y === 0) {
+                setTimeout(() => updateMap(earthquakes), 100);
+                return;
+            }
+
+            if (heatLayer) map.removeLayer(heatLayer);
+            earthquakeMarkers.clearLayers();
+            if (earthquakes.length === 0) return;
+
+            const heatPoints = earthquakes.map(eq => [eq.geometry.coordinates[1], eq.geometry.coordinates[0], eq.properties.mag]);
+            heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15, maxZoom: 18, max: 8.0, gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'} }).addTo(map);
+
+            earthquakes.forEach(eq => {
+                const [lon, lat] = eq.geometry.coordinates;
+                const mag = eq.properties.mag;
+                const place = eq.properties.place;
+                const time = new Date(eq.properties.time).toLocaleString();
+                const marker = L.circleMarker([lat, lon], {
+                    radius: getMagnitudeRadius(mag),
+                    color: getMagnitudeColor(mag),
+                    weight: 1,
+                    fillColor: getMagnitudeColor(mag),
+                    fillOpacity: 0.3
+                }).bindPopup(`<b>Magnitude:</b> ${mag}<br><b>Location:</b> ${place}<br><b>Time:</b> ${time}`);
+                marker.on('mouseover', function (e) { this.openPopup(); });
+                marker.on('mouseout', function (e) { this.closePopup(); });
+                earthquakeMarkers.addLayer(marker);
+            });
+        }
+        
+        function getMagnitudeColor(mag) {
+            if (mag < 3) return '#f44336';
+            if (mag < 4) return '#ff9800';
+            if (mag < 5) return '#ffeb3b';
+            if (mag < 6) return '#4caf50';
+            if (mag < 7) return '#2196f3';
+            return '#9c27b0';
+        }
+        
+        function getMagnitudeRadius(mag) {
+            return 1 + (Math.floor(mag) * 1.3);
+        }
+
+        // --- LEGEND CONTROL ---
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'legend');
+            const grades = [0, 3, 4, 5, 6, 7];
+            div.innerHTML += '<h4>Magnitude</h4>';
+            for (let i = 0; i < grades.length; i++) {
+                const from = grades[i];
+                const to = grades[i + 1];
+                let labelText = from + (to ? '&ndash;' + (to - 0.1).toFixed(1) : '+');
+                div.innerHTML += '<i style="background:' + getMagnitudeColor(from + 0.1) + ';"></i> ' + labelText + '<br>';
+            }
+            div.innerHTML += '<br><small>Circle size represents magnitude.</small>';
+            return div;
+        };
+        legend.addTo(map);
+
+        function handleFilterChange() {
+            fetchEarthquakes();
+        }
+
+        // --- EVENT LISTENERS ---
+        [startDateEl, endDateEl, minMagEl, maxMagEl].forEach(el => {
+            el.addEventListener('change', handleFilterChange);
+        });
+
+        countryFilterEl.addEventListener('change', () => {
+            const countryCode = countryFilterEl.value;
+            populateCities(countryCode);
+            if (countryCode) {
+                const country = countriesData.find(c => c.iso2 === countryCode);
+                if (country && country.latitude && country.longitude) {
+                    map.setView([parseFloat(country.latitude), parseFloat(country.longitude)], 5);
+                }
+            } else {
+                map.setView([20, 0], 2);
+            }
+            applyFilters();
+        });
+
+        cityFilterEl.addEventListener('change', applyFilters);
+
+        // --- INITIAL LOAD ---
+        fetchCountryCityData();
+        fetchEarthquakes();
+
+    </script>
+</body>
+</html>
