@@ -200,6 +200,18 @@
                 display: none;
             }
         }
+
+        /* Locate Button Styles */
+        .leaflet-bar a.leaflet-control-locate {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>');
+            background-size: 20px 20px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .dark .leaflet-bar a.leaflet-control-locate {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>');
+        }
     </style>
 </head>
 <body>
@@ -309,6 +321,36 @@
         const controlsContainer = document.getElementById('controls-container');
         const sheetToggle = document.getElementById('sheet-toggle');
         const refreshBtn = document.getElementById('refresh-btn');
+
+        // --- LOCATION CONTROL ---
+        const LocateControl = L.Control.extend({
+            options: {
+                position: 'topright'
+            },
+            onAdd: function (map) {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                const button = L.DomUtil.create('a', 'leaflet-control-locate', container);
+                button.href = '#';
+                button.title = 'Show my location';
+                button.role = 'button';
+                L.DomEvent.on(button, 'click', L.DomEvent.stop).on(button, 'click', () => {
+                    loadingEl.textContent = 'Finding your location...';
+                    loadingEl.style.display = 'block';
+                    map.locate({setView: true, maxZoom: 13});
+                });
+                return container;
+            }
+        });
+        map.addControl(new LocateControl());
+
+        map.on('locationfound', (e) => {
+            loadingEl.style.display = 'none';
+            L.marker(e.latlng).addTo(map).bindPopup("You are here!").openPopup();
+        });
+        map.on('locationerror', (e) => {
+            loadingEl.textContent = 'Location access denied or unavailable.';
+            setTimeout(() => { loadingEl.style.display = 'none'; }, 3000);
+        });
 
         // --- BOTTOM SHEET & THEME ---
         sheetToggle.addEventListener('click', () => {
