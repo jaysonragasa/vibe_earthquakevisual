@@ -109,7 +109,7 @@
         .dark h1 { color: #f9fafb; }
         .dark input, .dark select, .dark textarea { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
         .dark input:focus, .dark select:focus, .dark textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3); }
-        .dark .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        .dark .map-is-terrain .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%); }
         .dark .map-is-satellite .leaflet-tile { filter: brightness(0.9) contrast(1.1); }
         .dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip { background: #2d3748; color: #e2e8f0; }
         .dark button:disabled { background-color: #4b5563; }
@@ -223,7 +223,7 @@
                     </label>
                 </div>
                 <div class="theme-switch-wrapper">
-                    <label for="map-style-switch">Terrain View</label>
+                    <label for="map-style-switch">Street Map View</label>
                     <label class="theme-switch">
                         <input type="checkbox" id="map-style-switch">
                         <span class="slider round"></span>
@@ -285,7 +285,7 @@
                 <textarea id="description" rows="3" class="w-full p-2 border rounded-md"></textarea>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                Note: Uploaded images are saved in a secure database and will not be sold or used by any third party. A watermark based on the provided name will be added to the image.
+                Note: We securely store your uploaded images and never share or sell them to third parties. A watermark with your provided name will be added to each image. Please ensure you have the right to upload the content, as you are responsible for it. We also do not collect or store any location data.
             </p>
             <div class="flex justify-end gap-4 mt-4">
                 <button id="close-modal-btn" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-600 transition duration-300">Cancel</button>
@@ -313,13 +313,13 @@
         
         // --- FIREBASE SETUP ---
         const firebaseConfig = {
-            apiKey: "AIzaSyBzomHwjb9uW_plYI3f-K3VP2NlcPafFZY",
-            authDomain: "earthquakevisualizer-6ea71.firebaseapp.com",
-            projectId: "earthquakevisualizer-6ea71",
-            storageBucket: "earthquakevisualizer-6ea71.appspot.com",
-            messagingSenderId: "496793186883",
-            appId: "1:496793186883:web:e8e7c4b9c5e1ec75271af6",
-            measurementId: "G-GB9JNRHV7M"
+            apiKey: "VITE_FIREBASE_API_KEY",
+            authDomain: "VITE_FIREBASE_AUTH_DOMAIN",
+            projectId: "VITE_FIREBASE_PROJECT_ID",
+            storageBucket: "VITE_FIREBASE_STORAGE_BUCKET",
+            messagingSenderId: "VITE_FIREBASE_MESSAGING_SENDER_ID",
+            appId: "VITE_FIREBASE_APP_ID",
+            measurementId: "VITE_FIREBASE_MEASUREMENT_ID"
         };
 
         let db, auth;
@@ -564,9 +564,12 @@
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri'
         });
-        const terrainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}', {
-            attribution: '&copy; OpenStreetMap contributors'
+        const terrainLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
         });
+
 
         satelliteLayer.addTo(map);
         mapEl.classList.add('map-is-satellite');
@@ -615,10 +618,12 @@
                 map.removeLayer(satelliteLayer);
                 map.addLayer(terrainLayer);
                 mapEl.classList.remove('map-is-satellite');
+                mapEl.classList.add('map-is-terrain');
             } else {
                 map.removeLayer(terrainLayer);
                 map.addLayer(satelliteLayer);
                 mapEl.classList.add('map-is-satellite');
+                mapEl.classList.remove('map-is-terrain');
             }
         });
 
@@ -767,7 +772,7 @@
                 const marker = L.marker([report.latitude, report.longitude], { icon: cameraIcon });
                 const popupContent = `
                     <div style="max-width: 250px;">
-                        <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}')">
+                        <img src="${report.imageDataUrl}" alt="User report" style="height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}')">
                         <strong>${report.username}</strong>
                         <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
                         <p>${report.description}</p>
@@ -825,24 +830,32 @@
         cityFilterEl.addEventListener('change', applyFilters);
         refreshBtn.addEventListener('click', fetchEarthquakes);
 
-        try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            
-            signInAnonymously(auth).catch((error) => console.error("Anonymous sign-in failed:", error));
-            
-            // Listen for location-based reports
-            const locationReportsQuery = query(collection(db, "locationReports"), orderBy("createdAt", "desc"));
-            onSnapshot(locationReportsQuery, (snapshot) => {
-                const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateLocationReportMarkers(reports);
-            });
+        const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("__VERCEL_");
 
-        } catch (e) {
-            console.error("Firebase initialization failed:", e);
+        if (isConfigured) {
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                signInAnonymously(auth).catch((error) => console.error("Anonymous sign-in failed:", error));
+                
+                // Listen for location-based reports
+                const locationReportsQuery = query(collection(db, "locationReports"), orderBy("createdAt", "desc"));
+                onSnapshot(locationReportsQuery, (snapshot) => {
+                    const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    updateLocationReportMarkers(reports);
+                });
+
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                showLoading('Firebase initialization error.');
+            }
+        } else {
+            console.error("Firebase is not configured. Hardcoded keys are used for development.");
             showLoading('Firebase not configured.');
         }
+
 
         // --- Make functions globally available for inline event handlers ---
         window.openImageViewer = openImageViewer;
