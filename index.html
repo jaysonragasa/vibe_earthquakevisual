@@ -95,9 +95,11 @@
         #controls { background-color: white; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
         #sheet-handle-bar { background-color: #d1d5db; }
         label { color: #374151; }
-        input, select { background-color: white; border: 1px solid #d1d5db; color: #111827; }
-        input:focus, select:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        input, select, textarea { background-color: white; border: 1px solid #d1d5db; color: #111827; }
+        input:focus, select:focus, textarea:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
         .leaflet-tile { filter: none; }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
 
         /* Dark Mode */
         .dark body { background-color: #111827; }
@@ -105,11 +107,13 @@
         .dark #sheet-handle-bar { background-color: #4b5563; }
         .dark label { color: #d1d5db; }
         .dark h1 { color: #f9fafb; }
-        .dark input, .dark select { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
-        .dark input:focus, .dark select:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3); }
+        .dark input, .dark select, .dark textarea { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
+        .dark input:focus, .dark select:focus, .dark textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3); }
         .dark .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%); }
         .dark .map-is-satellite .leaflet-tile { filter: brightness(0.9) contrast(1.1); }
         .dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip { background: #2d3748; color: #e2e8f0; }
+        .dark button:disabled { background-color: #4b5563; }
+
 
         /* Loading Indicator */
         #loading {
@@ -117,15 +121,30 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             border-radius: 0.5rem;
-            z-index: 2000;
+            z-index: 4000;
             font-weight: 600;
-            display: none;
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
             text-align: center;
         }
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 4px solid;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         body:not(.dark) #loading { background: rgba(255, 255, 255, 0.9); color: #111827; }
+        body:not(.dark) .spinner { border-color: #e5e7eb; border-top-color: #4f46e5; }
         .dark #loading { background: rgba(31, 41, 55, 0.9); color: #f9fafb; }
+        .dark .spinner { border-color: #4b5563; border-top-color: #6366f1; }
         
         /* Theme Toggle Switch */
         .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
@@ -139,78 +158,49 @@
         .slider.round:before { border-radius: 50%; }
 
         /* Legend Styles */
-        .legend-container {
-            transition: all 0.3s ease-in-out;
-        }
-        .legend-content {
-            padding: 10px;
-            font-size: 14px;
-            line-height: 23px;
-            border-radius: 5px;
-        }
+        .legend-container { transition: all 0.3s ease-in-out; }
+        .legend-content { padding: 10px; font-size: 14px; line-height: 23px; border-radius: 5px; }
         .legend-content h4 { margin-top: 0; margin-bottom: 5px; font-weight: bold; }
         .legend-content i { width: 20px; height: 20px; float: left; margin-right: 8px; opacity: 0.9; border-radius: 50%; }
-        
-        #legend-toggle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            float: right;
-            margin: 5px;
-        }
-        #legend-toggle svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        /* Light Mode Legend */
+        #legend-toggle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; float: right; margin: 5px; }
+        #legend-toggle svg { width: 24px; height: 24px; }
         body:not(.dark) .legend-content { background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); color: #333; }
         body:not(.dark) #legend-toggle { background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
         body:not(.dark) #legend-toggle svg { fill: #333; }
-        
-        /* Dark Mode Legend */
         .dark .legend-content { background: #1f2937; color: #f9fafb; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         .dark #legend-toggle { background: #1f2937; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         .dark #legend-toggle svg { fill: #f9fafb; }
         
-        /* Mobile Collapsible Legend */
         @media (max-width: 767px) {
-            .leaflet-bottom.leaflet-right {
-                bottom: 4.5rem; /* Raise legend above bottom sheet handle */
-            }
-            .legend-content {
-                max-height: 0;
-                overflow: hidden;
-                padding: 0 10px;
-                transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-                float: right;
-                clear: both;
-            }
-            .legend-container.expanded .legend-content {
-                max-height: 300px; /* Adjust as needed */
-                padding: 10px;
-            }
+            .leaflet-bottom.leaflet-right { bottom: 4.5rem; }
+            .legend-content { max-height: 0; overflow: hidden; padding: 0 10px; transition: max-height 0.3s ease-out, padding 0.3s ease-out; float: right; clear: both; }
+            .legend-container.expanded .legend-content { max-height: 300px; padding: 10px; }
         }
-        @media (min-width: 768px) {
-            #legend-toggle {
-                display: none;
-            }
-        }
+        @media (min-width: 768px) { #legend-toggle { display: none; } }
 
         /* Locate Button Styles */
-        .leaflet-bar a.leaflet-control-locate {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>');
-            background-size: 20px 20px;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
+        .leaflet-bar a.leaflet-control-locate { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>'); background-size: 20px 20px; background-repeat: no-repeat; background-position: center; }
+        .dark .leaflet-bar a.leaflet-control-locate { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23fff"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>'); }
 
-        .dark .leaflet-bar a.leaflet-control-locate {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23fff"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>');
+        /* Submission Modal */
+        #submission-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3000; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5); }
+        #submission-modal-content { max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; padding: 2rem; border-radius: 1rem; }
+        #image-preview { width: 100%; height: 200px; object-fit: cover; border-radius: 0.5rem; margin-bottom: 1rem; }
+        body:not(.dark) #submission-modal-content { background-color: white; }
+        .dark #submission-modal-content { background-color: #1f2937; }
+
+        /* Image Viewer Modal */
+        #image-viewer-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center;
+            z-index: 5000;
+        }
+        #viewer-image { max-width: 90%; max-height: 90%; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        #close-viewer-btn {
+            position: absolute; top: 20px; right: 30px;
+            font-size: 40px; color: white; cursor: pointer;
+            line-height: 1;
         }
     </style>
 </head>
@@ -223,9 +213,8 @@
                 <div id="sheet-handle-bar"></div>
             </div>
             <div class="controls-content px-6 pb-6 md:p-6">
-                <h1 class="text-2xl font-bold mb-4">Earthquake Visualizer</h1>
-				<p class="text-sm text-gray-400 mb-4">Data provided by <a href="https://www.usgs.gov/programs/earthquake-hazards">earthquake.usgs.gov</a></p>
-				
+                <h1 class="text-2xl font-bold mb-1">Earthquake Visualizer</h1>
+                <p class="text-sm text-gray-400 mb-4">earthquake.usgs.gov</p>
                 <div class="theme-switch-wrapper">
                     <label for="theme-switch">Dark Mode</label>
                     <label class="theme-switch">
@@ -233,7 +222,6 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
-
                 <div class="theme-switch-wrapper">
                     <label for="map-style-switch">Terrain View</label>
                     <label class="theme-switch">
@@ -241,34 +229,28 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
-
                 <div class="control-group">
                     <label for="start-date">Start Date</label>
                     <input type="date" id="start-date" class="w-full p-2 border rounded-md">
                 </div>
-
                 <div class="control-group">
                     <label for="end-date">End Date</label>
                     <input type="date" id="end-date" class="w-full p-2 border rounded-md">
                 </div>
-
                 <div class="control-group">
                     <label for="min-magnitude">Min Magnitude</label>
                     <input type="number" id="min-magnitude" min="0" max="10" step="0.1" value="2.5" class="w-full p-2 border rounded-md">
                 </div>
-
                 <div class="control-group">
                     <label for="max-magnitude">Max Magnitude</label>
                     <input type="number" id="max-magnitude" min="0" max="10" step="0.1" value="10" class="w-full p-2 border rounded-md">
                 </div>
-                
                 <div class="control-group">
                     <label for="country-filter">Country</label>
                     <select id="country-filter" class="w-full p-2 border rounded-md">
                         <option value="">All Countries</option>
                     </select>
                 </div>
-
                 <div class="control-group">
                     <label for="city-filter">City</label>
                     <select id="city-filter" class="w-full p-2 border rounded-md" disabled>
@@ -281,23 +263,309 @@
             </div>
         </div>
     </div>
-    
-    <div id="loading">Loading earthquake data...</div>
 
-    <script>
-        // --- INITIALIZATION ---
+    <div id="submission-modal">
+        <div id="submission-modal-content">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4">Submit a Report</h2>
+            <img id="image-preview" src="https://placehold.co/600x400/374151/f9fafb?text=Select+an+Image" alt="Image preview">
+            <div class="control-group">
+                <label for="image-upload">Upload Image</label>
+                <input type="file" id="image-upload" accept="image/*" class="w-full p-2 border rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+            </div>
+             <div class="control-group">
+                <label for="date-taken">Date Taken</label>
+                <input type="date" id="date-taken" class="w-full p-2 border rounded-md">
+            </div>
+            <div class="control-group">
+                <label for="username">Your Name</label>
+                <input type="text" id="username" placeholder="Anonymous" class="w-full p-2 border rounded-md">
+            </div>
+            <div class="control-group">
+                <label for="description">Description</label>
+                <textarea id="description" rows="3" class="w-full p-2 border rounded-md"></textarea>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                Note: Uploaded images are saved in a secure database and will not be sold or used by any third party. A watermark based on the provided name will be added to the image.
+            </p>
+            <div class="flex justify-end gap-4 mt-4">
+                <button id="close-modal-btn" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-600 transition duration-300">Cancel</button>
+                <button id="submit-report-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">Submit</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading">
+        <div class="spinner"></div>
+        <span id="loading-text"></span>
+    </div>
+
+    <div id="image-viewer-modal">
+        <span id="close-viewer-btn">&times;</span>
+        <img id="viewer-image" src="">
+    </div>
+
+    <!-- Main Application Script -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        
+        // --- FIREBASE SETUP ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBzomHwjb9uW_plYI3f-K3VP2NlcPafFZY",
+            authDomain: "earthquakevisualizer-6ea71.firebaseapp.com",
+            projectId: "earthquakevisualizer-6ea71",
+            storageBucket: "earthquakevisualizer-6ea71.appspot.com",
+            messagingSenderId: "496793186883",
+            appId: "1:496793186883:web:e8e7c4b9c5e1ec75271af6",
+            measurementId: "G-GB9JNRHV7M"
+        };
+
+        let db, auth;
+
+        // --- DOM ELEMENT REFERENCES ---
+        const loadingEl = document.getElementById('loading');
+        const loadingTextEl = document.getElementById('loading-text');
+        const loadingSpinnerEl = document.querySelector('#loading .spinner');
+        const submissionModal = document.getElementById('submission-modal');
+        const modalTitleEl = document.getElementById('modal-title');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const submitReportBtn = document.getElementById('submit-report-btn');
+        const imageUploadEl = document.getElementById('image-upload');
+        const imagePreviewEl = document.getElementById('image-preview');
+        const usernameEl = document.getElementById('username');
+        const descriptionEl = document.getElementById('description');
+        const dateTakenEl = document.getElementById('date-taken');
         const mapEl = document.getElementById('map');
-        const map = L.map(mapEl, {
-            zoomControl: false // We will add it back in a different position
-        }).setView([20, 0], 2);
+        const startDateEl = document.getElementById('start-date');
+        const endDateEl = document.getElementById('end-date');
+        const minMagEl = document.getElementById('min-magnitude');
+        const maxMagEl = document.getElementById('max-magnitude');
+        const countryFilterEl = document.getElementById('country-filter');
+        const cityFilterEl = document.getElementById('city-filter');
+        const themeSwitch = document.getElementById('theme-switch');
+        const mapStyleSwitch = document.getElementById('map-style-switch');
+        const controlsContainer = document.getElementById('controls-container');
+        const sheetToggle = document.getElementById('sheet-toggle');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const imageViewerModal = document.getElementById('image-viewer-modal');
+        const viewerImage = document.getElementById('viewer-image');
+        const closeViewerBtn = document.getElementById('close-viewer-btn');
+
+
+        // --- LOADING INDICATOR CONTROLS ---
+        function showLoading(text, showSpinner = false) {
+            loadingTextEl.textContent = text;
+            loadingSpinnerEl.style.display = showSpinner ? 'block' : 'none';
+            loadingEl.style.display = 'flex';
+        }
+
+        function hideLoading(delay = 0) {
+            if (delay > 0) {
+                setTimeout(() => { loadingEl.style.display = 'none'; }, delay);
+            } else {
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        // --- IMAGE VIEWER LOGIC ---
+        function openImageViewer(src) {
+            viewerImage.src = src;
+            imageViewerModal.style.display = 'flex';
+        }
+        function closeImageViewer() {
+            imageViewerModal.style.display = 'none';
+            viewerImage.src = '';
+        }
+        closeViewerBtn.addEventListener('click', closeImageViewer);
+        imageViewerModal.addEventListener('click', (e) => {
+            if (e.target === imageViewerModal) closeImageViewer();
+        });
+
+
+        // --- SUBMISSION MODAL LOGIC ---
+        let currentSubmissionContext = null;
+
+        const modalFormElements = [
+            submitReportBtn, closeModalBtn, imageUploadEl, dateTakenEl, usernameEl, descriptionEl
+        ];
+
+        function openSubmissionModal(context) {
+            currentSubmissionContext = context;
+            modalTitleEl.textContent = context.type === 'earthquake' 
+                ? 'Submit Earthquake Report' 
+                : 'Submit Location Report';
+            submissionModal.style.display = 'flex';
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            submissionModal.style.display = 'none';
+            resetSubmissionForm();
+        });
+
+        imageUploadEl.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                imagePreviewEl.src = URL.createObjectURL(file);
+            }
+        });
+        
+        function resizeAndWatermarkImage(file, maxWidth, maxHeight, quality, username) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                        } else {
+                            if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // --- Watermark ---
+                        const fontSize1 = Math.max(12, width / 40);
+                        const fontSize2 = Math.max(14, width / 35);
+                        const padding = 10;
+
+                        // Background
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                        const text1 = 'Uploaded by:';
+                        const text2 = username;
+                        ctx.font = `bold ${fontSize2}px Inter, sans-serif`;
+                        const textWidth = Math.max(ctx.measureText(text1).width, ctx.measureText(text2).width);
+                        const textHeight = (fontSize1 + fontSize2) * 1.2;
+                        ctx.fillRect( (width - textWidth) / 2 - padding, height - textHeight - (padding*2), textWidth + (padding*2), textHeight + padding);
+
+                        // Text
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        
+                        // Line 1
+                        ctx.font = `${fontSize1}px Inter, sans-serif`;
+                        ctx.fillText(text1, width / 2, height - fontSize2 * 1.2 - padding);
+                        
+                        // Line 2
+                        ctx.font = `bold ${fontSize2}px Inter, sans-serif`;
+                        ctx.fillText(text2, width / 2, height - padding);
+
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+
+        submitReportBtn.addEventListener('click', async () => {
+            if (!db) {
+                console.error("Firestore is not initialized!");
+                alert("Database connection failed. Please refresh the page.");
+                return;
+            }
+            if (!currentSubmissionContext) return;
+
+            const file = imageUploadEl.files[0];
+            const username = usernameEl.value.trim() || 'Anonymous';
+            const description = descriptionEl.value.trim();
+            const dateTaken = dateTakenEl.value;
+
+            if (!file || !description || !dateTaken) {
+                alert('Please provide an image, date, and description.');
+                return;
+            }
+
+            modalFormElements.forEach(el => el.disabled = true);
+            submissionModal.style.display = 'none'; // Close modal before processing
+            showLoading('Compressing image...', true);
+
+            try {
+                const imageDataUrl = await resizeAndWatermarkImage(file, 800, 800, 0.8, username);
+                showLoading('Uploading report...', true);
+
+                let reportData = {
+                    username, description, dateTaken, imageDataUrl, createdAt: new Date()
+                };
+
+                if (currentSubmissionContext.type === 'earthquake') {
+                    reportData.earthquakeId = currentSubmissionContext.id;
+                    await addDoc(collection(db, "reports"), reportData);
+                } else if (currentSubmissionContext.type === 'location') {
+                    reportData.latitude = currentSubmissionContext.lat;
+                    reportData.longitude = currentSubmissionContext.lng;
+                    await addDoc(collection(db, "locationReports"), reportData);
+                }
+
+                showLoading('Report submitted!', false);
+                hideLoading(2000);
+                resetSubmissionForm();
+
+            } catch (error) {
+                console.error("Error submitting report: ", error);
+                showLoading('Submission failed. Please try again.', false);
+                hideLoading(3000);
+            } finally {
+                 modalFormElements.forEach(el => el.disabled = false);
+            }
+        });
+
+        function resetSubmissionForm() {
+            currentSubmissionContext = null;
+            imageUploadEl.value = '';
+            usernameEl.value = '';
+            descriptionEl.value = '';
+            dateTakenEl.value = '';
+            imagePreviewEl.src = 'https://placehold.co/600x400/374151/f9fafb?text=Select+an+Image';
+        }
+
+        function displayEarthquakeReportsInPopup(earthquakeId, container) {
+             if (!db) return;
+             const q = query(collection(db, "reports"), where("earthquakeId", "==", earthquakeId));
+             onSnapshot(q, (querySnapshot) => {
+                let reportsHTML = '<h4>User Reports</h4>';
+                if (querySnapshot.empty) {
+                    reportsHTML += '<p>No reports yet.</p>';
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const report = doc.data();
+                        reportsHTML += `
+                            <div style="margin-top: 10px; border-top: 1px solid #555; padding-top: 10px;">
+                                <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}')">
+                                <strong>${report.username}</strong>
+                                <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
+                                <p>${report.description}</p>
+                            </div>
+                        `;
+                    });
+                }
+                container.innerHTML = reportsHTML;
+             });
+        }
+        
+        // --- MAP LOGIC SCRIPT ---
+
+        // INITIALIZATION
+        const map = L.map(mapEl, { zoomControl: false }).setView([20, 0], 2);
         L.control.zoom({ position: 'topright' }).addTo(map);
 
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            attribution: 'Tiles &copy; Esri'
         });
-
-        const terrainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        const terrainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}', {
+            attribution: '&copy; OpenStreetMap contributors'
         });
 
         satelliteLayer.addTo(map);
@@ -305,29 +573,14 @@
 
         let heatLayer = null;
         let earthquakeMarkers = L.layerGroup().addTo(map);
+        let locationReportMarkers = L.layerGroup().addTo(map);
         let allEarthquakes = [];
         let countriesData = [];
         let citiesData = [];
-
-        // --- DOM ELEMENT REFERENCES ---
-        const startDateEl = document.getElementById('start-date');
-        const endDateEl = document.getElementById('end-date');
-        const minMagEl = document.getElementById('min-magnitude');
-        const maxMagEl = document.getElementById('max-magnitude');
-        const countryFilterEl = document.getElementById('country-filter');
-        const cityFilterEl = document.getElementById('city-filter');
-        const loadingEl = document.getElementById('loading');
-        const themeSwitch = document.getElementById('theme-switch');
-        const mapStyleSwitch = document.getElementById('map-style-switch');
-        const controlsContainer = document.getElementById('controls-container');
-        const sheetToggle = document.getElementById('sheet-toggle');
-        const refreshBtn = document.getElementById('refresh-btn');
-
-        // --- LOCATION CONTROL ---
+        
+        // LOCATION & MAP CLICK
         const LocateControl = L.Control.extend({
-            options: {
-                position: 'topright'
-            },
+            options: { position: 'topright' },
             onAdd: function (map) {
                 const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
                 const button = L.DomUtil.create('a', 'leaflet-control-locate', container);
@@ -335,31 +588,28 @@
                 button.title = 'Show my location';
                 button.role = 'button';
                 L.DomEvent.on(button, 'click', L.DomEvent.stop).on(button, 'click', () => {
-                    loadingEl.textContent = 'Finding your location...';
-                    loadingEl.style.display = 'block';
+                    showLoading('Finding your location...');
                     map.locate({setView: true, maxZoom: 13});
                 });
                 return container;
             }
         });
         map.addControl(new LocateControl());
-
         map.on('locationfound', (e) => {
-            loadingEl.style.display = 'none';
+            hideLoading();
             L.marker(e.latlng).addTo(map).bindPopup("You are here!").openPopup();
         });
         map.on('locationerror', (e) => {
-            loadingEl.textContent = 'Location access denied or unavailable.';
-            setTimeout(() => { loadingEl.style.display = 'none'; }, 3000);
+            showLoading('Location access denied or unavailable.');
+            hideLoading(3000);
+        });
+        map.on('click', (e) => {
+             openSubmissionModal({ type: 'location', lat: e.latlng.lat, lng: e.latlng.lng });
         });
 
-        // --- BOTTOM SHEET & THEME ---
-        sheetToggle.addEventListener('click', () => {
-            controlsContainer.classList.toggle('is-open');
-        });
-        themeSwitch.addEventListener('change', () => {
-            document.documentElement.classList.toggle('dark', themeSwitch.checked);
-        });
+        // UI & THEME
+        sheetToggle.addEventListener('click', () => controlsContainer.classList.toggle('is-open'));
+        themeSwitch.addEventListener('change', () => document.documentElement.classList.toggle('dark', themeSwitch.checked));
         mapStyleSwitch.addEventListener('change', () => {
             if (mapStyleSwitch.checked) {
                 map.removeLayer(satelliteLayer);
@@ -372,14 +622,13 @@
             }
         });
 
-
-        // --- DATE INITIALIZATION ---
+        // DATE INITIALIZATION
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         startDateEl.value = startOfMonth.toISOString().split('T')[0];
         endDateEl.value = today.toISOString().split('T')[0];
         
-        // --- DATA FETCHING ---
+        // DATA FETCHING
         async function fetchCountryCityData() {
             try {
                 const [countriesRes, citiesRes] = await Promise.all([
@@ -395,14 +644,8 @@
         }
 
         async function fetchEarthquakes() {
-            loadingEl.style.display = 'block';
-            loadingEl.textContent = 'Loading earthquake data...';
-
-            const startDate = startDateEl.value;
-            const endDate = endDateEl.value;
-            const minMag = minMagEl.value;
-            const maxMag = maxMagEl.value;
-            
+            showLoading('Loading earthquake data...', true);
+            const startDate = startDateEl.value, endDate = endDateEl.value, minMag = minMagEl.value, maxMag = maxMagEl.value;
             const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${startDate}&endtime=${endDate}&minmagnitude=${minMag}&maxmagnitude=${maxMag}`;
 
             try {
@@ -410,27 +653,22 @@
                 if (!response.ok) {
                     const errorText = await response.text();
                     const userMessage = errorText.split('\n')[1] || "An error occurred. Please adjust your filters.";
-                    loadingEl.textContent = userMessage;
-                    console.error("API Error:", errorText);
-                    setTimeout(() => { 
-                        loadingEl.style.display = 'none'; 
-                    }, 5000); // Show error for 5 seconds
+                    showLoading(userMessage);
+                    hideLoading(5000);
                     return;
                 }
                 const data = await response.json();
                 allEarthquakes = data.features;
                 applyFilters();
-                loadingEl.style.display = 'none';
+                hideLoading();
             } catch (error) {
                 console.error("Error fetching earthquake data:", error);
-                loadingEl.textContent = "Could not fetch data due to a network error.";
-                setTimeout(() => { 
-                    loadingEl.style.display = 'none'; 
-                }, 3000);
+                showLoading("Could not fetch data due to a network error.");
+                hideLoading(3000);
             }
         }
 
-        // --- UI POPULATION ---
+        // UI POPULATION
         function populateCountries() {
             countriesData.sort((a, b) => a.name.localeCompare(b.name));
             countriesData.forEach(country => {
@@ -447,8 +685,7 @@
                 cityFilterEl.disabled = true;
                 return;
             }
-            const countryCities = citiesData.filter(city => city.country_code === countryCode);
-            countryCities.sort((a, b) => a.name.localeCompare(b.name));
+            const countryCities = citiesData.filter(city => city.country_code === countryCode).sort((a,b) => a.name.localeCompare(b.name));
             countryCities.forEach(city => {
                 const option = document.createElement('option');
                 option.value = city.name;
@@ -458,27 +695,23 @@
             cityFilterEl.disabled = false;
         }
 
-        // --- MAP & FILTER LOGIC ---
+        // MAP & FILTER LOGIC
         function applyFilters() {
             let filteredEarthquakes = [...allEarthquakes];
             const selectedCountry = countryFilterEl.options[countryFilterEl.selectedIndex].text;
             const selectedCity = cityFilterEl.value;
 
             if (selectedCountry && countryFilterEl.value) {
-                filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place && eq.properties.place.toLowerCase().includes(selectedCountry.toLowerCase()));
+                filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place?.toLowerCase().includes(selectedCountry.toLowerCase()));
             }
             if (selectedCity) {
-                 filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place && eq.properties.place.toLowerCase().includes(selectedCity.toLowerCase()));
+                 filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place?.toLowerCase().includes(selectedCity.toLowerCase()));
             }
             updateMap(filteredEarthquakes);
         }
 
         function updateMap(earthquakes) {
-            const mapSize = map.getSize();
-            if (mapSize.x === 0 || mapSize.y === 0) {
-                setTimeout(() => updateMap(earthquakes), 100);
-                return;
-            }
+            if (map.getSize().x === 0) return setTimeout(() => updateMap(earthquakes), 100);
 
             if (heatLayer) map.removeLayer(heatLayer);
             earthquakeMarkers.clearLayers();
@@ -489,101 +722,139 @@
 
             earthquakes.forEach(eq => {
                 const [lon, lat] = eq.geometry.coordinates;
-                const mag = eq.properties.mag;
-                const place = eq.properties.place;
-                const time = new Date(eq.properties.time).toLocaleString();
+                const { mag, place, time } = eq.properties;
+                const earthquakeId = eq.id;
+
+                const popupContent = document.createElement('div');
+                popupContent.innerHTML = `
+                    <b>Magnitude:</b> ${mag}<br>
+                    <b>Location:</b> ${place}<br>
+                    <b>Time:</b> ${new Date(time).toLocaleString()}<br><hr style="margin: 5px 0;">
+                    <div id="reports-container-${earthquakeId}"><p>Loading reports...</p></div>
+                    <button class="w-full bg-indigo-600 text-white font-bold py-2 px-2 rounded-md hover:bg-indigo-700 transition duration-300 mt-2" onclick="window.openSubmissionModal({ type: 'earthquake', id: '${earthquakeId}' })">
+                        Add Your Report
+                    </button>
+                `;
+
                 const marker = L.circleMarker([lat, lon], {
                     radius: getMagnitudeRadius(mag),
                     color: getMagnitudeColor(mag),
                     weight: 1,
                     fillColor: getMagnitudeColor(mag),
                     fillOpacity: 0.3
-                }).bindPopup(`<b>Magnitude:</b> ${mag}<br><b>Location:</b> ${place}<br><b>Time:</b> ${time}`);
-                marker.on('mouseover', function (e) { this.openPopup(); });
-                marker.on('mouseout', function (e) { this.closePopup(); });
+                }).bindPopup(popupContent);
+                
+                marker.on('popupopen', () => {
+                    const reportsContainer = document.getElementById(`reports-container-${earthquakeId}`);
+                    if (reportsContainer) displayEarthquakeReportsInPopup(earthquakeId, reportsContainer);
+                });
                 earthquakeMarkers.addLayer(marker);
             });
         }
         
+        function updateLocationReportMarkers(reports) {
+            showLoading('Loading user reports...', true);
+            locationReportMarkers.clearLayers();
+            const iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24px" height="24px"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 6.5 12 6.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>`;
+            const cameraIcon = L.divIcon({
+                html: `<div style="background-color: #4f46e5; border-radius: 50%; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);">${iconHtml}</div>`,
+                className: '',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -16]
+            });
+            reports.forEach(report => {
+                const marker = L.marker([report.latitude, report.longitude], { icon: cameraIcon });
+                const popupContent = `
+                    <div style="max-width: 250px;">
+                        <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}')">
+                        <strong>${report.username}</strong>
+                        <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
+                        <p>${report.description}</p>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                locationReportMarkers.addLayer(marker);
+            });
+            hideLoading();
+        };
+        
         function getMagnitudeColor(mag) {
-            if (mag < 3) return '#ff073a';  // Neon Red
-            if (mag < 4) return '#ff9e00';  // Neon Orange
-            if (mag < 5) return '#f9ff00';  // Neon Yellow
-            if (mag < 6) return '#39ff14';  // Neon Green
-            if (mag < 7) return '#00f5ff';  // Neon Cyan
-            if (mag < 8) return '#004dff';  // Neon Blue
-            if (mag < 9) return '#8f00ff';  // Neon Violet
-            if (mag < 10) return '#ff00ff'; // Neon Magenta
-            return '#ff1493'; // Neon Pink (hot pink, distinct from magenta)
+            if (mag < 3) return '#ff073a'; if (mag < 4) return '#ff9e00'; if (mag < 5) return '#f9ff00';
+            if (mag < 6) return '#39ff14'; if (mag < 7) return '#00f5ff'; if (mag < 8) return '#004dff';
+            if (mag < 9) return '#8f00ff'; if (mag < 10) return '#ff00ff'; return '#ff1493';
         }
         
-        function getMagnitudeRadius(mag) {
-            return 1 + (Math.floor(mag) * 1.3);
-        }
+        function getMagnitudeRadius(mag) { return 1 + (Math.floor(mag) * 1.3); }
 
-        // --- LEGEND CONTROL ---
+        // LEGEND CONTROL
         const legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
             const container = L.DomUtil.create('div', 'legend-container');
             const toggle = L.DomUtil.create('div', '', container);
             const content = L.DomUtil.create('div', 'legend-content', container);
-
             toggle.id = 'legend-toggle';
             toggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
-            
             const grades = [0, 3, 4, 5, 6, 7, 8, 9, 10];
             let contentHTML = '<h4>Magnitude</h4>';
-            for (let i = 0; i < grades.length; i++) {
-                const from = grades[i];
+            grades.forEach((from, i) => {
                 const to = grades[i + 1];
-                let labelText = from + (to ? '&ndash;' + (to - 0.1).toFixed(1) : '+');
-                contentHTML += '<i style="background:' + getMagnitudeColor(from + 0.1) + ';"></i> ' + labelText + '<br>';
-            }
+                contentHTML += `<i style="background:${getMagnitudeColor(from + 0.1)};"></i> ${from}${to ? '&ndash;' + (to - 0.1).toFixed(1) : '+'}<br>`;
+            });
             contentHTML += '<br><small>Circle size represents magnitude.</small>';
             content.innerHTML = contentHTML;
-
-            L.DomEvent.on(toggle, 'click', function(e) {
-                L.DomEvent.stop(e);
-                container.classList.toggle('expanded');
-            });
-            
-            // Prevent map interactions when clicking on the legend
+            L.DomEvent.on(toggle, 'click', (e) => { L.DomEvent.stop(e); container.classList.toggle('expanded'); });
             L.DomEvent.disableClickPropagation(container);
-
             return container;
         };
         legend.addTo(map);
 
-        function handleFilterChange() {
-            fetchEarthquakes();
-        }
-
-        // --- EVENT LISTENERS ---
-        [startDateEl, endDateEl, minMagEl, maxMagEl].forEach(el => {
-            el.addEventListener('change', handleFilterChange);
-        });
-
+        // EVENT LISTENERS
+        [startDateEl, endDateEl, minMagEl, maxMagEl].forEach(el => el.addEventListener('change', fetchEarthquakes));
         countryFilterEl.addEventListener('change', () => {
             const countryCode = countryFilterEl.value;
             populateCities(countryCode);
             if (countryCode) {
                 const country = countriesData.find(c => c.iso2 === countryCode);
-                if (country && country.latitude && country.longitude) {
-                    map.setView([parseFloat(country.latitude), parseFloat(country.longitude)], 5);
-                }
+                if (country) map.setView([parseFloat(country.latitude), parseFloat(country.longitude)], 5);
             } else {
                 map.setView([20, 0], 2);
             }
             applyFilters();
         });
-
         cityFilterEl.addEventListener('change', applyFilters);
         refreshBtn.addEventListener('click', fetchEarthquakes);
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            signInAnonymously(auth).catch((error) => console.error("Anonymous sign-in failed:", error));
+            
+            // Listen for location-based reports
+            const locationReportsQuery = query(collection(db, "locationReports"), orderBy("createdAt", "desc"));
+            onSnapshot(locationReportsQuery, (snapshot) => {
+                const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateLocationReportMarkers(reports);
+            });
+
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            showLoading('Firebase not configured.');
+        }
+
+        // --- Make functions globally available for inline event handlers ---
+        window.openImageViewer = openImageViewer;
+        window.openSubmissionModal = openSubmissionModal;
+
 
         // --- INITIAL LOAD ---
         fetchCountryCityData();
         fetchEarthquakes();
 
     </script>
+
 </body>
 </html>
+
