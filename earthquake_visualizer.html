@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recent Earthquakes Visualizer</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Basic Styles */
@@ -118,32 +121,30 @@
         /* Loading Indicator */
         #loading {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 1.5rem 2rem;
-            border-radius: 0.5rem;
-            z-index: 4000;
+            bottom: 20px;
+            left: 20px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            z-index: 1002;
             font-weight: 600;
-            display: none; /* Initially hidden */
-            flex-direction: column;
+            display: none;
+            flex-direction: row;
             align-items: center;
-            gap: 1rem;
-            text-align: center;
+            gap: 8px;
         }
         .spinner {
-            width: 36px;
-            height: 36px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            border: 4px solid;
+            border: 3px solid;
             animation: spin 1s linear infinite;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        body:not(.dark) #loading { background: rgba(255, 255, 255, 0.9); color: #111827; }
+        body:not(.dark) #loading { background: white; color: #333; box-shadow: 0 1px 5px rgba(0,0,0,0.65); }
         body:not(.dark) .spinner { border-color: #e5e7eb; border-top-color: #4f46e5; }
-        .dark #loading { background: rgba(31, 41, 55, 0.9); color: #f9fafb; }
+        .dark #loading { background: #1f2937; color: #f9fafb; box-shadow: 0 1px 5px rgba(0,0,0,0.65); }
         .dark .spinner { border-color: #4b5563; border-top-color: #6366f1; }
         
         /* Theme Toggle Switch */
@@ -201,6 +202,29 @@
             position: absolute; top: 20px; right: 30px;
             font-size: 40px; color: white; cursor: pointer;
             line-height: 1;
+        }
+        #view-on-map-link {
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            color: white; background-color: rgba(0,0,0,0.5);
+            padding: 8px 16px; border-radius: 5px; text-decoration: none;
+        }
+        #view-on-map-link:hover { background-color: rgba(0,0,0,0.8); }
+
+        /* Gallery Popup */
+        .gallery-popup-container {
+            max-height: 300px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 5px;
+        }
+        .gallery-popup-container img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -302,6 +326,7 @@
     <div id="image-viewer-modal">
         <span id="close-viewer-btn">&times;</span>
         <img id="viewer-image" src="">
+        <a href="#" id="view-on-map-link">View on Map</a>
     </div>
 
     <!-- Main Application Script -->
@@ -335,7 +360,6 @@
 			measurementId: "%VITE_FIREBASE_MEASUREMENT_ID%"
 		};
 		
-
         let db, auth;
 
         // --- DOM ELEMENT REFERENCES ---
@@ -366,7 +390,7 @@
         const imageViewerModal = document.getElementById('image-viewer-modal');
         const viewerImage = document.getElementById('viewer-image');
         const closeViewerBtn = document.getElementById('close-viewer-btn');
-
+        const viewOnMapLink = document.getElementById('view-on-map-link');
 
         // --- LOADING INDICATOR CONTROLS ---
         function showLoading(text, showSpinner = false) {
@@ -384,13 +408,21 @@
         }
 
         // --- IMAGE VIEWER LOGIC ---
-        function openImageViewer(src) {
+        function openImageViewer(src, lat, lng) {
             viewerImage.src = src;
             imageViewerModal.style.display = 'flex';
+            viewOnMapLink.onclick = (e) => {
+                e.preventDefault();
+                panToImageLocation(lat, lng);
+            };
         }
         function closeImageViewer() {
             imageViewerModal.style.display = 'none';
             viewerImage.src = '';
+        }
+        function panToImageLocation(lat, lng) {
+            closeImageViewer();
+            map.flyTo([lat, lng], 18);
         }
         closeViewerBtn.addEventListener('click', closeImageViewer);
         imageViewerModal.addEventListener('click', (e) => {
@@ -539,7 +571,7 @@
                 showLoading('Report submitted!', false);
                 hideLoading(2000);
                 resetSubmissionForm();
-                fetchAndDisplayLocationReports(); // Re-query after submission
+                fetchAndDisplayLocationReports(false); // Re-query without showing loading indicator
 
             } catch (error) {
                 console.error("Error submitting report: ", error);
@@ -571,7 +603,7 @@
                         const report = doc.data();
                         reportsHTML += `
                             <div style="margin-top: 10px; border-top: 1px solid #555; padding-top: 10px;">
-                                <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}')">
+                                <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})">
                                 <strong>${report.username}</strong>
                                 <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
                                 <p>${report.description}</p>
@@ -604,7 +636,7 @@
 
         let heatLayer = null;
         let earthquakeMarkers = L.layerGroup().addTo(map);
-        let locationReportMarkers = L.layerGroup().addTo(map);
+        let locationReportMarkers = L.markerClusterGroup().addTo(map);
         let allEarthquakes = [];
         let countriesData = [];
         let citiesData = [];
@@ -811,7 +843,6 @@
 
             querySnapshot.forEach((doc) => {
                 const report = doc.data();
-                const reportLatLng = L.latLng(report.latitude, report.longitude);
                 
                 let countryMatch = true;
                 if (selectedCountry && countryFilterEl.value) {
@@ -823,7 +854,7 @@
                     cityMatch = report.city === selectedCity;
                 }
 
-                if (mapBounds.contains(reportLatLng) && countryMatch && cityMatch) {
+                if (countryMatch && cityMatch) {
                     reportsInView.push(report);
                 }
             });
@@ -843,9 +874,10 @@
 
             reports.forEach(report => {
                 const marker = L.marker([report.latitude, report.longitude], { icon: cameraIcon });
+                marker.reportData = report; // Attach data to marker
                 const popupContent = `
                     <div style="max-width: 250px;">
-                        <img src="${report.imageDataUrl}" alt="User report" style="height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}')">
+                        <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})">
                         <strong>${report.username}</strong>
                         <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
                         <p>${report.description}</p>
@@ -860,6 +892,21 @@
             }
         };
         
+        locationReportMarkers.on('clusterclick', function (a) {
+            const markers = a.layer.getAllChildMarkers();
+            let popupContent = '<div class="gallery-popup-container">';
+            markers.forEach(marker => {
+                const report = marker.reportData;
+                popupContent += `<img src="${report.imageDataUrl}" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})">`;
+            });
+            popupContent += '</div>';
+
+            L.popup()
+                .setLatLng(a.layer.getLatLng())
+                .setContent(popupContent)
+                .openOn(map);
+        });
+
         function getMagnitudeColor(mag) {
             if (mag < 3) return '#ff073a'; if (mag < 4) return '#ff9e00'; if (mag < 5) return '#f9ff00';
             if (mag < 6) return '#39ff14'; if (mag < 7) return '#00f5ff'; if (mag < 8) return '#004dff';
