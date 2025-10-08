@@ -1,0 +1,15 @@
+{
+  "name": "earthquake-visualizer-build",
+  "version": "1.0.0",
+  "description": "Build script for earthquake visualizer",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
