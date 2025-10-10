@@ -112,7 +112,6 @@
         .dark h1, .dark h2 { color: #f9fafb; }
         .dark input, .dark select, .dark textarea { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
         .dark input:focus, .dark select:focus, .dark textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3); }
-        .dark .map-is-terrain .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%); }
         .dark .map-is-satellite .leaflet-tile { filter: brightness(0.9) contrast(1.1); }
         .dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip { background: #2d3748; color: #e2e8f0; }
         .dark button:disabled { background-color: #4b5563; }
@@ -916,12 +915,16 @@
                 window.openSubmissionModal = uiModule.openSubmissionModal.bind(uiModule);
             },
             async handleSubmit() {
+                const context = appState.currentSubmissionContext;
                 if (!appState.db) {
                     console.error("Firestore is not initialized!");
                     alert("Database connection failed. Please refresh the page.");
                     return;
                 }
-                if (!appState.currentSubmissionContext) return;
+                if (!context) {
+                    console.error("Submission context is missing.");
+                    return;
+                }
 
                 const file = dom.imageUpload.files[0];
                 const username = dom.username.value.trim() || 'Anonymous';
@@ -932,8 +935,9 @@
                     alert('Please provide an image, date, and description.');
                     return;
                 }
-
+                
                 uiModule.toggleModalForm(true);
+                uiModule.closeSubmissionModal();
                 uiModule.showLoading('Compressing image...', true);
 
                 try {
@@ -944,22 +948,21 @@
                         username, description, dateTaken, imageDataUrl, createdAt: new Date()
                     };
 
-                    if (appState.currentSubmissionContext.type === 'earthquake') {
-                        reportData.earthquakeId = appState.currentSubmissionContext.id;
-                    } else if (appState.currentSubmissionContext.type === 'location') {
-                        reportData.latitude = appState.currentSubmissionContext.lat;
-                        reportData.longitude = appState.currentSubmissionContext.lng;
+                    if (context.type === 'earthquake') {
+                        reportData.earthquakeId = context.id;
+                    } else if (context.type === 'location') {
+                        reportData.latitude = context.lat;
+                        reportData.longitude = context.lng;
                         
                         const address = await apiModule.getAddressFromCoords(reportData.latitude, reportData.longitude);
                         reportData.countryName = address.countryName;
                         reportData.city = address.city;
                     }
 
-                    await firebaseModule.submitReport(reportData, appState.currentSubmissionContext.type);
+                    await firebaseModule.submitReport(reportData, context.type);
                     
                     uiModule.showLoading('Report submitted!', false);
                     uiModule.hideLoading(2000);
-                    uiModule.resetSubmissionForm();
                     mapModule.fetchAndDisplayLocationReports(false);
 
                 } catch (error) {
@@ -968,7 +971,6 @@
                     uiModule.hideLoading(3000);
                 } finally {
                      uiModule.toggleModalForm(false);
-					 uiModule.closeSubmissionModal();
                 }
             },
             applyFilters() {
