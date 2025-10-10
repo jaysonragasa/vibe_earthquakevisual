@@ -109,7 +109,7 @@
         .dark #controls { background-color: #1f2937; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
         .dark #sheet-handle-bar { background-color: #4b5563; }
         .dark label { color: #d1d5db; }
-        .dark h1 { color: #f9fafb; }
+        .dark h1, .dark h2 { color: #f9fafb; }
         .dark input, .dark select, .dark textarea { background-color: #374151; border-color: #4b5563; color: #f9fafb; }
         .dark input:focus, .dark select:focus, .dark textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3); }
         .dark .map-is-terrain .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%); }
@@ -125,7 +125,7 @@
             left: 20px;
             padding: 8px 12px;
             border-radius: 5px;
-            z-index: 1002;
+            z-index: 4000;
             font-weight: 600;
             display: none;
             flex-direction: row;
@@ -183,19 +183,30 @@
         .leaflet-bar a.leaflet-control-locate { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>'); background-size: 20px 20px; background-repeat: no-repeat; background-position: center; }
         .dark .leaflet-bar a.leaflet-control-locate { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23fff"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>'); }
 
-        /* Submission Modal */
-        #submission-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3000; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5); }
-        #submission-modal-content { max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; padding: 2rem; border-radius: 1rem; }
+        /* Modal Styles */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5); }
+        .modal-content { max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; padding: 2rem; border-radius: 1rem; }
         #image-preview { width: 100%; height: 200px; object-fit: cover; border-radius: 0.5rem; margin-bottom: 1rem; }
-        body:not(.dark) #submission-modal-content { background-color: white; }
-        .dark #submission-modal-content { background-color: #1f2937; }
+        body:not(.dark) .modal-content { background-color: white; }
+        .dark .modal-content { background-color: #1f2937; }
+
+        /* Welcome Modal Override */
+        #welcome-modal .modal-content, .dark #welcome-modal .modal-content {
+            background-color: white;
+        }
+        #welcome-modal h2, .dark #welcome-modal h2 {
+            color: black;
+        }
+        #welcome-modal p, #welcome-modal label, .dark #welcome-modal p, .dark #welcome-modal label {
+            color: #1f2937;
+        }
 
         /* Image Viewer Modal */
         #image-viewer-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.8);
             display: none; align-items: center; justify-content: center;
-            z-index: 5000;
+            z-index: 11000;
         }
         #viewer-image { max-width: 90%; max-height: 90%; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #close-viewer-btn {
@@ -288,8 +299,8 @@
         </div>
     </div>
 
-    <div id="submission-modal">
-        <div id="submission-modal-content">
+    <div id="submission-modal" class="modal">
+        <div class="modal-content">
             <h2 id="modal-title" class="text-2xl font-bold mb-4">Submit a Report</h2>
             <img id="image-preview" src="https://placehold.co/600x400/374151/f9fafb?text=Select+an+Image" alt="Image preview">
             <div class="control-group">
@@ -318,6 +329,19 @@
         </div>
     </div>
     
+    <div id="welcome-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Welcome to the Earthquake Visualizer!</h2>
+            <p class="mb-4">This map shows recent earthquakes from around the world, based on data from the USGS.</p>
+            <p class="mb-4"><strong>To add a photo report:</strong> Just zoom to your current location or tap any location where the event is related and upload a picture.</p>
+            <div class="flex items-center mt-6 mb-4">
+                <input type="checkbox" id="dont-show-again" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="dont-show-again" class="ml-2 block text-sm">Don't show this again</label>
+            </div>
+            <button id="close-welcome-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 transition">Got it!</button>
+        </div>
+    </div>
+
     <div id="loading">
         <div class="spinner"></div>
         <span id="loading-text"></span>
@@ -336,644 +360,594 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
-        // --- FIREBASE SETUP ---
-		const firebaseConfig = {
-			apiKey: "%VITE_FIREBASE_API_KEY%",
-			authDomain: "%VITE_FIREBASE_AUTH_DOMAIN%",
-			projectId: "%VITE_FIREBASE_PROJECT_ID%",
-			storageBucket: "%VITE_FIREBASE_STORAGE_BUCKET%",
-			messagingSenderId: "%VITE_FIREBASE_MESSAGING_SENDER_ID%",
-			appId: "%VITE_FIREBASE_APP_ID%",
-			measurementId: "%VITE_FIREBASE_MEASUREMENT_ID%"
-		};
-		
-        let db, auth;
+        // --- APPLICATION STATE ---
+        const appState = {
+            db: null,
+            auth: null,
+            map: null,
+            heatLayer: null,
+            earthquakeMarkers: null,
+            locationReportMarkers: null,
+            allEarthquakes: [],
+            countriesData: [],
+            citiesData: [],
+            currentSubmissionContext: null
+        };
 
         // --- DOM ELEMENT REFERENCES ---
-        const loadingEl = document.getElementById('loading');
-        const loadingTextEl = document.getElementById('loading-text');
-        const loadingSpinnerEl = document.querySelector('#loading .spinner');
-        const submissionModal = document.getElementById('submission-modal');
-        const modalTitleEl = document.getElementById('modal-title');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const submitReportBtn = document.getElementById('submit-report-btn');
-        const imageUploadEl = document.getElementById('image-upload');
-        const imagePreviewEl = document.getElementById('image-preview');
-        const usernameEl = document.getElementById('username');
-        const descriptionEl = document.getElementById('description');
-        const dateTakenEl = document.getElementById('date-taken');
-        const mapEl = document.getElementById('map');
-        const startDateEl = document.getElementById('start-date');
-        const endDateEl = document.getElementById('end-date');
-        const minMagEl = document.getElementById('min-magnitude');
-        const maxMagEl = document.getElementById('max-magnitude');
-        const countryFilterEl = document.getElementById('country-filter');
-        const cityFilterEl = document.getElementById('city-filter');
-        const themeSwitch = document.getElementById('theme-switch');
-        const mapStyleSwitch = document.getElementById('map-style-switch');
-        const controlsContainer = document.getElementById('controls-container');
-        const sheetToggle = document.getElementById('sheet-toggle');
-        const refreshBtn = document.getElementById('refresh-btn');
-        const imageViewerModal = document.getElementById('image-viewer-modal');
-        const viewerImage = document.getElementById('viewer-image');
-        const closeViewerBtn = document.getElementById('close-viewer-btn');
-        const viewOnMapLink = document.getElementById('view-on-map-link');
+        const dom = {
+            loading: document.getElementById('loading'),
+            loadingText: document.getElementById('loading-text'),
+            loadingSpinner: document.querySelector('#loading .spinner'),
+            submissionModal: document.getElementById('submission-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            closeModalBtn: document.getElementById('close-modal-btn'),
+            submitReportBtn: document.getElementById('submit-report-btn'),
+            imageUpload: document.getElementById('image-upload'),
+            imagePreview: document.getElementById('image-preview'),
+            username: document.getElementById('username'),
+            description: document.getElementById('description'),
+            dateTaken: document.getElementById('date-taken'),
+            map: document.getElementById('map'),
+            startDate: document.getElementById('start-date'),
+            endDate: document.getElementById('end-date'),
+            minMagnitude: document.getElementById('min-magnitude'),
+            maxMagnitude: document.getElementById('max-magnitude'),
+            countryFilter: document.getElementById('country-filter'),
+            cityFilter: document.getElementById('city-filter'),
+            themeSwitch: document.getElementById('theme-switch'),
+            mapStyleSwitch: document.getElementById('map-style-switch'),
+            controlsContainer: document.getElementById('controls-container'),
+            sheetToggle: document.getElementById('sheet-toggle'),
+            refreshBtn: document.getElementById('refresh-btn'),
+            imageViewerModal: document.getElementById('image-viewer-modal'),
+            viewerImage: document.getElementById('viewer-image'),
+            closeViewerBtn: document.getElementById('close-viewer-btn'),
+            viewOnMapLink: document.getElementById('view-on-map-link'),
+            welcomeModal: document.getElementById('welcome-modal'),
+            closeWelcomeBtn: document.getElementById('close-welcome-btn'),
+            dontShowAgainCheck: document.getElementById('dont-show-again')
+        };
 
-        // --- LOADING INDICATOR CONTROLS ---
-        function showLoading(text, showSpinner = false) {
-            loadingTextEl.textContent = text;
-            loadingSpinnerEl.style.display = showSpinner ? 'block' : 'none';
-            loadingEl.style.display = 'flex';
-        }
-
-        function hideLoading(delay = 0) {
-            if (delay > 0) {
-                setTimeout(() => { loadingEl.style.display = 'none'; }, delay);
-            } else {
-                loadingEl.style.display = 'none';
-            }
-        }
-
-        // --- IMAGE VIEWER LOGIC ---
-        function openImageViewer(src, lat, lng) {
-            viewerImage.src = src;
-            imageViewerModal.style.display = 'flex';
-            viewOnMapLink.onclick = (e) => {
-                e.preventDefault();
-                panToImageLocation(lat, lng);
-            };
-        }
-        function closeImageViewer() {
-            imageViewerModal.style.display = 'none';
-            viewerImage.src = '';
-        }
-        function panToImageLocation(lat, lng) {
-            closeImageViewer();
-            map.flyTo([lat, lng], 18);
-        }
-        closeViewerBtn.addEventListener('click', closeImageViewer);
-        imageViewerModal.addEventListener('click', (e) => {
-            if (e.target === imageViewerModal) closeImageViewer();
-        });
-
-
-        // --- SUBMISSION MODAL LOGIC ---
-        let currentSubmissionContext = null;
-
-        const modalFormElements = [
-            submitReportBtn, closeModalBtn, imageUploadEl, dateTakenEl, usernameEl, descriptionEl
-        ];
-
-        function openSubmissionModal(context) {
-            currentSubmissionContext = context;
-            modalTitleEl.textContent = context.type === 'earthquake' 
-                ? 'Submit Earthquake Report' 
-                : 'Submit Location Report';
-            submissionModal.style.display = 'flex';
-        }
-
-        closeModalBtn.addEventListener('click', () => {
-            submissionModal.style.display = 'none';
-            resetSubmissionForm();
-        });
-
-        imageUploadEl.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                imagePreviewEl.src = URL.createObjectURL(file);
-            }
-        });
-        
-        function resizeAndWatermarkImage(file, maxWidth, maxHeight, quality, username) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
-                        } else {
-                            if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
-                        }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // --- Watermark ---
-                        const fontSize1 = Math.max(12, width / 40);
-                        const fontSize2 = Math.max(14, width / 35);
-                        const padding = 10;
-
-                        // Background
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                        const text1 = 'Uploaded by:';
-                        const text2 = username;
-                        ctx.font = `bold ${fontSize2}px Inter, sans-serif`;
-                        const textWidth = Math.max(ctx.measureText(text1).width, ctx.measureText(text2).width);
-                        const textHeight = (fontSize1 + fontSize2) * 1.2;
-                        ctx.fillRect( (width - textWidth) / 2 - padding, height - textHeight - (padding*2), textWidth + (padding*2), textHeight + padding);
-
-                        // Text
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'bottom';
-                        
-                        // Line 1
-                        ctx.font = `${fontSize1}px Inter, sans-serif`;
-                        ctx.fillText(text1, width / 2, height - fontSize2 * 1.2 - padding);
-                        
-                        // Line 2
-                        ctx.font = `bold ${fontSize2}px Inter, sans-serif`;
-                        ctx.fillText(text2, width / 2, height - padding);
-
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-
-        submitReportBtn.addEventListener('click', async () => {
-            if (!db) {
-                console.error("Firestore is not initialized!");
-                alert("Database connection failed. Please refresh the page.");
-                return;
-            }
-            if (!currentSubmissionContext) return;
-
-            const file = imageUploadEl.files[0];
-            const username = usernameEl.value.trim() || 'Anonymous';
-            const description = descriptionEl.value.trim();
-            const dateTaken = dateTakenEl.value;
-
-            if (!file || !description || !dateTaken) {
-                alert('Please provide an image, date, and description.');
-                return;
-            }
-
-            modalFormElements.forEach(el => el.disabled = true);
-            submissionModal.style.display = 'none'; // Close modal before processing
-            showLoading('Compressing image...', true);
-
-            try {
-                const imageDataUrl = await resizeAndWatermarkImage(file, 800, 800, 0.8, username);
-                showLoading('Uploading report...', true);
-
-                let reportData = {
-                    username, description, dateTaken, imageDataUrl, createdAt: new Date()
-                };
-
-                if (currentSubmissionContext.type === 'earthquake') {
-                    reportData.earthquakeId = currentSubmissionContext.id;
-                    await addDoc(collection(db, "reports"), reportData);
-                } else if (currentSubmissionContext.type === 'location') {
-                    reportData.latitude = currentSubmissionContext.lat;
-                    reportData.longitude = currentSubmissionContext.lng;
-                    
-                    // Fetch and add address
-                    try {
-                        const geoResponse = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${reportData.latitude}&longitude=${reportData.longitude}&localityLanguage=en`);
-                        const geoData = await geoResponse.json();
-                        reportData.countryName = (geoData.countryName || '').replace(/\s*\(.*\)/, '').trim();
-                        reportData.city = geoData.city || '';
-                    } catch (geoError) {
-                        console.error("Geocoding failed:", geoError);
-                        reportData.countryName = '';
-                        reportData.city = '';
-                    }
-
-                    await addDoc(collection(db, "locationReports"), reportData);
-                }
-
-                showLoading('Report submitted!', false);
-                hideLoading(2000);
-                resetSubmissionForm();
-                fetchAndDisplayLocationReports(false); // Re-query without showing loading indicator
-
-            } catch (error) {
-                console.error("Error submitting report: ", error);
-                showLoading('Submission failed. Please try again.', false);
-                hideLoading(3000);
-            } finally {
-                 modalFormElements.forEach(el => el.disabled = false);
-            }
-        });
-
-        function resetSubmissionForm() {
-            currentSubmissionContext = null;
-            imageUploadEl.value = '';
-            usernameEl.value = '';
-            descriptionEl.value = '';
-            dateTakenEl.value = '';
-            imagePreviewEl.src = 'https://placehold.co/600x400/374151/f9fafb?text=Select+an+Image';
-        }
-
-        function displayEarthquakeReportsInPopup(earthquakeId, container) {
-             if (!db) return;
-             const q = query(collection(db, "reports"), where("earthquakeId", "==", earthquakeId));
-             onSnapshot(q, (querySnapshot) => {
-                let reportsHTML = '<h4>User Reports</h4>';
-                if (querySnapshot.empty) {
-                    reportsHTML += '<p>No reports yet.</p>';
+        // --- UI MODULE ---
+        const uiModule = {
+            showLoading(text, showSpinner = false) {
+                dom.loadingText.textContent = text;
+                dom.loadingSpinner.style.display = showSpinner ? 'block' : 'none';
+                dom.loading.style.display = 'flex';
+            },
+            hideLoading(delay = 0) {
+                if (delay > 0) {
+                    setTimeout(() => { dom.loading.style.display = 'none'; }, delay);
                 } else {
-                    querySnapshot.forEach((doc) => {
-                        const report = doc.data();
-                        reportsHTML += `
-                            <div style="margin-top: 10px; border-top: 1px solid #555; padding-top: 10px;">
-                                <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})">
-                                <strong>${report.username}</strong>
-                                <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
-                                <p>${report.description}</p>
-                            </div>
-                        `;
-                    });
+                    dom.loading.style.display = 'none';
                 }
-                container.innerHTML = reportsHTML;
-             });
-        }
-        
-        // --- MAP LOGIC SCRIPT ---
-
-        // INITIALIZATION
-        const map = L.map(mapEl, { zoomControl: false }).setView([20, 0], 2);
-        L.control.zoom({ position: 'topright' }).addTo(map);
-
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri'
-        });
-        const terrainLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
-        });
-
-
-        satelliteLayer.addTo(map);
-        mapEl.classList.add('map-is-satellite');
-
-        let heatLayer = null;
-        let earthquakeMarkers = L.layerGroup().addTo(map);
-        let locationReportMarkers = L.markerClusterGroup().addTo(map);
-        let allEarthquakes = [];
-        let countriesData = [];
-        let citiesData = [];
-        
-        // LOCATION & MAP CLICK
-        const LocateControl = L.Control.extend({
-            options: { position: 'topright' },
-            onAdd: function (map) {
-                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                const button = L.DomUtil.create('a', 'leaflet-control-locate', container);
-                button.href = '#';
-                button.title = 'Show my location';
-                button.role = 'button';
-                L.DomEvent.on(button, 'click', L.DomEvent.stop).on(button, 'click', () => {
-                    showLoading('Finding your location...');
-                    map.locate({setView: true, maxZoom: 13});
-                });
-                return container;
+            },
+            openImageViewer(src, lat, lng) {
+                dom.viewerImage.src = src;
+                dom.imageViewerModal.style.display = 'flex';
+                dom.viewOnMapLink.onclick = (e) => {
+                    e.preventDefault();
+                    this.closeImageViewer();
+                    appState.map.flyTo([lat, lng], 18);
+                };
+            },
+            closeImageViewer() {
+                dom.imageViewerModal.style.display = 'none';
+                dom.viewerImage.src = '';
+            },
+            openSubmissionModal(context) {
+                appState.currentSubmissionContext = context;
+                dom.modalTitle.textContent = context.type === 'earthquake' ? 'Submit Earthquake Report' : 'Submit Location Report';
+                dom.submissionModal.style.display = 'flex';
+            },
+            closeSubmissionModal() {
+                dom.submissionModal.style.display = 'none';
+                this.resetSubmissionForm();
+            },
+            openWelcomeModal() {
+                dom.welcomeModal.style.display = 'flex';
+            },
+            closeWelcomeModal() {
+                dom.welcomeModal.style.display = 'none';
+            },
+            resetSubmissionForm() {
+                appState.currentSubmissionContext = null;
+                dom.imageUpload.value = '';
+                dom.username.value = '';
+                dom.description.value = '';
+                dom.dateTaken.value = '';
+                dom.imagePreview.src = 'https://placehold.co/600x400/374151/f9fafb?text=Select+an+Image';
+            },
+            toggleModalForm(disabled) {
+                const elements = [dom.submitReportBtn, dom.closeModalBtn, dom.imageUpload, dom.dateTaken, dom.username, dom.description];
+                elements.forEach(el => el.disabled = disabled);
             }
-        });
-        map.addControl(new LocateControl());
-        map.on('locationfound', (e) => {
-            hideLoading();
-            L.marker(e.latlng).addTo(map).bindPopup("You are here!").openPopup();
-        });
-        map.on('locationerror', (e) => {
-            showLoading('Location access denied or unavailable.');
-            hideLoading(3000);
-        });
-        map.on('click', (e) => {
-             openSubmissionModal({ type: 'location', lat: e.latlng.lat, lng: e.latlng.lng });
-        });
+        };
 
-        // UI & THEME
-        sheetToggle.addEventListener('click', () => controlsContainer.classList.toggle('is-open'));
-        themeSwitch.addEventListener('change', () => document.documentElement.classList.toggle('dark', themeSwitch.checked));
-        mapStyleSwitch.addEventListener('change', () => {
-            if (mapStyleSwitch.checked) {
-                map.removeLayer(satelliteLayer);
-                map.addLayer(terrainLayer);
-                mapEl.classList.remove('map-is-satellite');
-                mapEl.classList.add('map-is-terrain');
-            } else {
-                map.removeLayer(terrainLayer);
-                map.addLayer(satelliteLayer);
-                mapEl.classList.add('map-is-satellite');
-                mapEl.classList.remove('map-is-terrain');
+        // --- API MODULE ---
+        const apiModule = {
+            async fetchCountryCityData() {
+                try {
+                    const [countriesRes, citiesRes] = await Promise.all([
+                        fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries.json'),
+                        fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/cities.json')
+                    ]);
+                    appState.countriesData = await countriesRes.json();
+                    appState.citiesData = await citiesRes.json();
+                    mapModule.populateCountries();
+                } catch (error) {
+                    console.error("Error fetching country/city data:", error);
+                }
+            },
+            async fetchEarthquakes() {
+                uiModule.showLoading('Loading earthquake data...', true);
+                const { value: startDate } = dom.startDate, { value: endDate } = dom.endDate, { value: minMag } = dom.minMagnitude, { value: maxMag } = dom.maxMagnitude;
+                const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${startDate}&endtime=${endDate}&minmagnitude=${minMag}&maxmagnitude=${maxMag}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        const userMessage = errorText.split('\n')[1] || "An error occurred. Please adjust your filters.";
+                        uiModule.showLoading(userMessage);
+                        uiModule.hideLoading(5000);
+                        return;
+                    }
+                    const data = await response.json();
+                    appState.allEarthquakes = data.features;
+                    eventHandlers.applyFilters();
+                    uiModule.hideLoading();
+                } catch (error) {
+                    console.error("Error fetching earthquake data:", error);
+                    uiModule.showLoading("Could not fetch data due to a network error.");
+                    uiModule.hideLoading(3000);
+                }
+            },
+            async getAddressFromCoords(latitude, longitude) {
+                try {
+                    const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+                    const data = await response.json();
+                    return {
+                        countryName: (data.countryName || '').replace(/\s*\(.*\)/, '').trim(),
+                        city: data.city || ''
+                    };
+                } catch (error) {
+                    console.error("Geocoding failed:", error);
+                    return { countryName: '', city: '' };
+                }
             }
-        });
+        };
 
-        // DATE INITIALIZATION
-        const today = new Date();
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        startDateEl.value = startOfMonth.toISOString().split('T')[0];
-        endDateEl.value = today.toISOString().split('T')[0];
-        
-        // DATA FETCHING
-        async function fetchCountryCityData() {
-            try {
-                const [countriesRes, citiesRes] = await Promise.all([
-                    fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries.json'),
-                    fetch('https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/cities.json')
-                ]);
-                countriesData = await countriesRes.json();
-                citiesData = await citiesRes.json();
-                populateCountries();
-            } catch (error) {
-                console.error("Error fetching country/city data:", error);
-            }
-        }
-
-        async function fetchEarthquakes() {
-            showLoading('Loading earthquake data...', true);
-            const startDate = startDateEl.value, endDate = endDateEl.value, minMag = minMagEl.value, maxMag = maxMagEl.value;
-            const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${startDate}&endtime=${endDate}&minmagnitude=${minMag}&maxmagnitude=${maxMag}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    const userMessage = errorText.split('\n')[1] || "An error occurred. Please adjust your filters.";
-                    showLoading(userMessage);
-                    hideLoading(5000);
+        // --- FIREBASE MODULE ---
+        const firebaseModule = {
+            init() {
+                const firebaseConfig = {
+                    apiKey: "%VITE_FIREBASE_API_KEY%",
+                    authDomain: "%VITE_FIREBASE_AUTH_DOMAIN%",
+                    projectId: "%VITE_FIREBASE_PROJECT_ID%",
+                    storageBucket: "%VITE_FIREBASE_STORAGE_BUCKET%",
+                    messagingSenderId: "%VITE_FIREBASE_MESSAGING_SENDER_ID%",
+                    appId: "%VITE_FIREBASE_APP_ID%",
+                    measurementId: "%VITE_FIREBASE_MEASUREMENT_ID%"
+                };
+                
+                const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("%");
+                if (isConfigured) {
+                    try {
+                        const app = initializeApp(firebaseConfig);
+                        appState.auth = getAuth(app);
+                        appState.db = getFirestore(app);
+                        
+                        signInAnonymously(appState.auth).catch((error) => console.error("Anonymous sign-in failed:", error));
+                        
+                    } catch (e) {
+                        console.error("Firebase initialization failed:", e);
+                        uiModule.showLoading('Firebase initialization error.');
+                    }
+                } else {
+                    console.error("Firebase is not configured.");
+                    uiModule.showLoading('Firebase not configured.');
+                }
+            },
+            async submitReport(reportData, type) {
+                if (!appState.db) {
+                    console.error("Firestore is not initialized!");
+                    alert("Database connection failed. Please refresh the page.");
                     return;
                 }
-                const data = await response.json();
-                allEarthquakes = data.features;
-                applyFilters();
-                hideLoading();
-            } catch (error) {
-                console.error("Error fetching earthquake data:", error);
-                showLoading("Could not fetch data due to a network error.");
-                hideLoading(3000);
-            }
-        }
-
-        // UI POPULATION
-        function populateCountries() {
-            countriesData.sort((a, b) => a.name.localeCompare(b.name));
-            countriesData.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country.iso2;
-                option.textContent = country.name;
-                countryFilterEl.appendChild(option);
-            });
-        }
-
-        function populateCities(countryCode) {
-            cityFilterEl.innerHTML = '<option value="">All Cities</option>';
-            if (!countryCode) {
-                cityFilterEl.disabled = true;
-                return;
-            }
-            const countryCities = citiesData.filter(city => city.country_code === countryCode).sort((a,b) => a.name.localeCompare(b.name));
-            countryCities.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city.name;
-                option.textContent = city.name;
-                cityFilterEl.appendChild(option);
-            });
-            cityFilterEl.disabled = false;
-        }
-
-        // MAP & FILTER LOGIC
-        function applyFilters() {
-            let filteredEarthquakes = [...allEarthquakes];
-            const selectedCountry = countryFilterEl.options[countryFilterEl.selectedIndex].text;
-            const selectedCity = cityFilterEl.value;
-
-            if (selectedCountry && countryFilterEl.value) {
-                filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place?.toLowerCase().includes(selectedCountry.toLowerCase()));
-            }
-            if (selectedCity) {
-                 filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place?.toLowerCase().includes(selectedCity.toLowerCase()));
-            }
-            updateMap(filteredEarthquakes);
-            fetchAndDisplayLocationReports();
-        }
-
-        function updateMap(earthquakes) {
-            if (map.getSize().x === 0) return setTimeout(() => updateMap(earthquakes), 100);
-
-            if (heatLayer) map.removeLayer(heatLayer);
-            earthquakeMarkers.clearLayers();
-            if (earthquakes.length === 0) return;
-
-            const heatPoints = earthquakes.map(eq => [eq.geometry.coordinates[1], eq.geometry.coordinates[0], eq.properties.mag]);
-            heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15, maxZoom: 18, max: 8.0, gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'} }).addTo(map);
-
-            earthquakes.forEach(eq => {
-                const [lon, lat] = eq.geometry.coordinates;
-                const { mag, place, time } = eq.properties;
-                const earthquakeId = eq.id;
-
-                const popupContent = document.createElement('div');
-                popupContent.innerHTML = `
-                    <b>Magnitude:</b> ${mag}<br>
-                    <b>Location:</b> ${place}<br>
-                    <b>Time:</b> ${new Date(time).toLocaleString()}<br><hr style="margin: 5px 0;">
-                    <div id="reports-container-${earthquakeId}"><p>Loading reports...</p></div>
-                    <button class="w-full bg-indigo-600 text-white font-bold py-2 px-2 rounded-md hover:bg-indigo-700 transition duration-300 mt-2" onclick="window.openSubmissionModal({ type: 'earthquake', id: '${earthquakeId}' })">
-                        Add Your Report
-                    </button>
-                `;
-
-                const marker = L.circleMarker([lat, lon], {
-                    radius: getMagnitudeRadius(mag),
-                    color: getMagnitudeColor(mag),
-                    weight: 1,
-                    fillColor: getMagnitudeColor(mag),
-                    fillOpacity: 0.3
-                }).bindPopup(popupContent);
                 
-                marker.on('popupopen', () => {
-                    const reportsContainer = document.getElementById(`reports-container-${earthquakeId}`);
-                    if (reportsContainer) displayEarthquakeReportsInPopup(earthquakeId, reportsContainer);
+                const collectionName = type === 'earthquake' ? 'reports' : 'locationReports';
+                await addDoc(collection(appState.db, collectionName), reportData);
+            },
+            displayEarthquakeReportsInPopup(earthquakeId, container) {
+                 if (!appState.db) return;
+                 const q = query(collection(appState.db, "reports"), where("earthquakeId", "==", earthquakeId));
+                 onSnapshot(q, (querySnapshot) => {
+                    let reportsHTML = '<h4>User Reports</h4>';
+                    if (querySnapshot.empty) {
+                        reportsHTML += '<p>No reports yet.</p>';
+                    } else {
+                        querySnapshot.forEach((doc) => {
+                            const report = doc.data();
+                            reportsHTML += `
+                                <div style="margin-top: 10px; border-top: 1px solid #555; padding-top: 10px;">
+                                    <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})">
+                                    <strong>${report.username}</strong>
+                                    <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
+                                    <p>${report.description}</p>
+                                </div>
+                            `;
+                        });
+                    }
+                    container.innerHTML = reportsHTML;
+                 });
+            }
+        };
+
+        // --- MAP MODULE ---
+        const mapModule = {
+            init() {
+                appState.map = L.map(dom.map, { zoomControl: false }).setView([20, 0], 2);
+                L.control.zoom({ position: 'topright' }).addTo(appState.map);
+
+                const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri'
                 });
-                earthquakeMarkers.addLayer(marker);
-            });
-        }
-        
-        async function fetchAndDisplayLocationReports(showIndicator = true) {
-            if (!db) return;
-            if (showIndicator) {
-                showLoading('Loading user reports...', true);
-            }
-            
-            const mapBounds = map.getBounds();
-            const startDate = new Date(startDateEl.value);
-            const endDate = new Date(endDateEl.value);
-            endDate.setHours(23, 59, 59, 999); // Include the whole end day
+                const terrainLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 19
+                });
 
-            const q = query(
-                collection(db, "locationReports"),
-                where("createdAt", ">=", startDate),
-                where("createdAt", "<=", endDate)
-            );
-
-            const querySnapshot = await getDocs(q);
-            
-            const reportsInView = [];
-            const selectedCountry = countryFilterEl.options[countryFilterEl.selectedIndex].text;
-            const selectedCity = cityFilterEl.value;
-
-            querySnapshot.forEach((doc) => {
-                const report = doc.data();
+                satelliteLayer.addTo(appState.map);
+                dom.map.classList.add('map-is-satellite');
                 
-                let countryMatch = true;
-                if (selectedCountry && countryFilterEl.value) {
-                    countryMatch = report.countryName === selectedCountry;
+                appState.earthquakeMarkers = L.layerGroup().addTo(appState.map);
+                appState.locationReportMarkers = L.markerClusterGroup().addTo(appState.map);
+
+                this.addLocateControl();
+                this.addLegend();
+
+                return { satelliteLayer, terrainLayer };
+            },
+            addLocateControl() {
+                const LocateControl = L.Control.extend({
+                    options: { position: 'topright' },
+                    onAdd: function (map) {
+                        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                        const button = L.DomUtil.create('a', 'leaflet-control-locate', container);
+                        button.href = '#';
+                        button.title = 'Show my location';
+                        button.role = 'button';
+                        L.DomEvent.on(button, 'click', L.DomEvent.stop).on(button, 'click', () => {
+                            uiModule.showLoading('Finding your location...');
+                            map.locate({setView: true, maxZoom: 13});
+                        });
+                        return container;
+                    }
+                });
+                appState.map.addControl(new LocateControl());
+            },
+            addLegend() {
+                const legend = L.control({position: 'bottomright'});
+                legend.onAdd = function (map) {
+                    const container = L.DomUtil.create('div', 'legend-container');
+                    const toggle = L.DomUtil.create('div', '', container);
+                    const content = L.DomUtil.create('div', 'legend-content', container);
+                    toggle.id = 'legend-toggle';
+                    toggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
+                    const grades = [0, 3, 4, 5, 6, 7, 8, 9, 10];
+                    let contentHTML = '<h4>Magnitude</h4>';
+                    grades.forEach((from, i) => {
+                        const to = grades[i + 1];
+                        contentHTML += `<i style="background:${this.getMagnitudeColor(from + 0.1)};"></i> ${from}${to ? '&ndash;' + (to - 0.1).toFixed(1) : '+'}<br>`;
+                    });
+                    contentHTML += '<br><small>Circle size represents magnitude.</small>';
+                    content.innerHTML = contentHTML;
+                    L.DomEvent.on(toggle, 'click', (e) => { L.DomEvent.stop(e); container.classList.toggle('expanded'); });
+                    L.DomEvent.disableClickPropagation(container);
+                    return container;
+                }.bind(this);
+                legend.addTo(appState.map);
+            },
+            getMagnitudeColor(mag) {
+                if (mag < 3) return '#ff073a'; if (mag < 4) return '#ff9e00'; if (mag < 5) return '#f9ff00';
+                if (mag < 6) return '#39ff14'; if (mag < 7) return '#00f5ff'; if (mag < 8) return '#004dff';
+                if (mag < 9) return '#8f00ff'; if (mag < 10) return '#ff00ff'; return '#ff1493';
+            },
+            getMagnitudeRadius(mag) { return 1 + (Math.floor(mag) * 1.3); },
+            updateEarthquakeMarkers(earthquakes) {
+                if (appState.map.getSize().x === 0) return setTimeout(() => this.updateEarthquakeMarkers(earthquakes), 100);
+
+                if (appState.heatLayer) appState.map.removeLayer(appState.heatLayer);
+                appState.earthquakeMarkers.clearLayers();
+                if (earthquakes.length === 0) return;
+
+                const heatPoints = earthquakes.map(eq => [eq.geometry.coordinates[1], eq.geometry.coordinates[0], eq.properties.mag]);
+                appState.heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15, maxZoom: 18, max: 8.0, gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'} }).addTo(appState.map);
+
+                earthquakes.forEach(eq => {
+                    const [lon, lat] = eq.geometry.coordinates;
+                    const { mag, place, time } = eq.properties;
+                    const earthquakeId = eq.id;
+
+                    const popupContent = document.createElement('div');
+                    popupContent.innerHTML = `<b>Magnitude:</b> ${mag}<br><b>Location:</b> ${place}<br><b>Time:</b> ${new Date(time).toLocaleString()}<br><hr style="margin: 5px 0;"><div id="reports-container-${earthquakeId}"><p>Loading reports...</p></div><button class="w-full bg-indigo-600 text-white font-bold py-2 px-2 rounded-md hover:bg-indigo-700 transition duration-300 mt-2" onclick="window.openSubmissionModal({ type: 'earthquake', id: '${earthquakeId}' })">Add Your Report</button>`;
+
+                    const marker = L.circleMarker([lat, lon], {
+                        radius: this.getMagnitudeRadius(mag),
+                        color: this.getMagnitudeColor(mag),
+                        weight: 1,
+                        fillColor: this.getMagnitudeColor(mag),
+                        fillOpacity: 0.3
+                    }).bindPopup(popupContent);
+                    
+                    marker.on('popupopen', () => {
+                        const reportsContainer = document.getElementById(`reports-container-${earthquakeId}`);
+                        if (reportsContainer) firebaseModule.displayEarthquakeReportsInPopup(earthquakeId, reportsContainer);
+                    });
+                    appState.earthquakeMarkers.addLayer(marker);
+                });
+            },
+            async fetchAndDisplayLocationReports(showIndicator = true) {
+                if (!appState.db) return;
+                if (showIndicator) uiModule.showLoading('Loading user reports...', true);
+                
+                const mapBounds = appState.map.getBounds();
+                const startDate = new Date(dom.startDate.value);
+                const endDate = new Date(dom.endDate.value);
+                endDate.setHours(23, 59, 59, 999);
+
+                const q = query(
+                    collection(appState.db, "locationReports"),
+                    where("createdAt", ">=", startDate),
+                    where("createdAt", "<=", endDate)
+                );
+
+                const querySnapshot = await getDocs(q);
+                
+                const reportsInView = [];
+                const selectedCountry = dom.countryFilter.options[dom.countryFilter.selectedIndex].text;
+                const selectedCity = dom.cityFilter.value;
+
+                querySnapshot.forEach((doc) => {
+                    const report = doc.data();
+                    let countryMatch = !selectedCountry || !dom.countryFilter.value || report.countryName === selectedCountry;
+                    let cityMatch = !selectedCity || report.city === selectedCity;
+                    
+                    if (countryMatch && cityMatch) {
+                        reportsInView.push(report);
+                    }
+                });
+                this.updateLocationReportMarkers(reportsInView, showIndicator);
+            },
+            updateLocationReportMarkers(reports, showIndicator = true) {
+                appState.locationReportMarkers.clearLayers();
+                const iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24px" height="24px"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 6.5 12 6.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>`;
+                const cameraIcon = L.divIcon({
+                    html: `<div style="background-color: #4f46e5; border-radius: 50%; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);">${iconHtml}</div>`,
+                    className: '', iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -16]
+                });
+
+                reports.forEach(report => {
+                    const marker = L.marker([report.latitude, report.longitude], { icon: cameraIcon });
+                    marker.reportData = report;
+                    marker.bindPopup(`<div style="max-width: 250px;"><img src="${report.imageDataUrl}" alt="User report" style="height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})"><strong>${report.username}</strong><small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small><p>${report.description}</p></div>`);
+                    appState.locationReportMarkers.addLayer(marker);
+                });
+
+                if(showIndicator) uiModule.hideLoading();
+            },
+            populateCountries() {
+                appState.countriesData.sort((a, b) => a.name.localeCompare(b.name));
+                appState.countriesData.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.iso2;
+                    option.textContent = country.name;
+                    dom.countryFilter.appendChild(option);
+                });
+            },
+            populateCities(countryCode) {
+                dom.cityFilter.innerHTML = '<option value="">All Cities</option>';
+                if (!countryCode) {
+                    dom.cityFilter.disabled = true;
+                    return;
+                }
+                const countryCities = appState.citiesData.filter(city => city.country_code === countryCode).sort((a,b) => a.name.localeCompare(b.name));
+                countryCities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.name;
+                    option.textContent = city.name;
+                    dom.cityFilter.appendChild(option);
+                });
+                dom.cityFilter.disabled = false;
+            }
+        };
+
+        // --- EVENT HANDLERS & APP LOGIC ---
+        const eventHandlers = {
+            init() {
+                const { satelliteLayer, terrainLayer } = mapModule.init();
+
+                dom.sheetToggle.addEventListener('click', () => dom.controlsContainer.classList.toggle('is-open'));
+                dom.themeSwitch.addEventListener('change', () => document.documentElement.classList.toggle('dark', dom.themeSwitch.checked));
+                dom.mapStyleSwitch.addEventListener('change', () => {
+                    if (dom.mapStyleSwitch.checked) {
+                        appState.map.removeLayer(satelliteLayer);
+                        appState.map.addLayer(terrainLayer);
+                        dom.map.classList.remove('map-is-satellite');
+                        dom.map.classList.add('map-is-terrain');
+                    } else {
+                        appState.map.removeLayer(terrainLayer);
+                        appState.map.addLayer(satelliteLayer);
+                        dom.map.classList.add('map-is-satellite');
+                        dom.map.classList.remove('map-is-terrain');
+                    }
+                });
+
+                appState.map.on('locationfound', (e) => {
+                    uiModule.hideLoading();
+                    L.marker(e.latlng).addTo(appState.map).bindPopup("You are here!").openPopup();
+                });
+                appState.map.on('locationerror', () => {
+                    uiModule.showLoading('Location access denied or unavailable.');
+                    uiModule.hideLoading(3000);
+                });
+                appState.map.on('click', (e) => {
+                    // Prevent opening submission modal if clicking on a marker/control
+                    if (e.originalEvent.target.closest('.leaflet-marker-icon') || e.originalEvent.target.closest('.leaflet-control')) return;
+                    uiModule.openSubmissionModal({ type: 'location', lat: e.latlng.lat, lng: e.latlng.lng });
+                });
+
+                const date = new Date(), y = date.getFullYear(), m = date.getMonth();
+                dom.startDate.value = new Date(y, m, 1).toISOString().split('T')[0];
+                dom.endDate.value = new Date().toISOString().split('T')[0];
+
+                [dom.startDate, dom.endDate, dom.minMagnitude, dom.maxMagnitude].forEach(el => el.addEventListener('change', apiModule.fetchEarthquakes));
+                
+                dom.countryFilter.addEventListener('change', () => {
+                    const countryCode = dom.countryFilter.value;
+                    mapModule.populateCities(countryCode);
+                    if (countryCode) {
+                        const country = appState.countriesData.find(c => c.iso2 === countryCode);
+                        if (country) appState.map.setView([parseFloat(country.latitude), parseFloat(country.longitude)], 5);
+                    } else {
+                        appState.map.setView([20, 0], 2);
+                    }
+                    this.applyFilters();
+                });
+
+                dom.cityFilter.addEventListener('change', this.applyFilters);
+                dom.refreshBtn.addEventListener('click', apiModule.fetchEarthquakes);
+                appState.locationReportMarkers.on('clusterclick', (a) => {
+                    const markers = a.layer.getAllChildMarkers();
+                    let popupContent = '<div class="gallery-popup-container">';
+                    markers.forEach(marker => {
+                        const { reportData } = marker;
+                        popupContent += `<img src="${reportData.imageDataUrl}" onclick="window.openImageViewer('${reportData.imageDataUrl}', ${reportData.latitude}, ${reportData.longitude})">`;
+                    });
+                    popupContent += '</div>';
+                    L.popup().setLatLng(a.layer.getLatLng()).setContent(popupContent).openOn(appState.map);
+                });
+                appState.map.on('moveend', () => mapModule.fetchAndDisplayLocationReports(true));
+
+                // Modal event listeners
+                dom.closeModalBtn.addEventListener('click', () => uiModule.closeSubmissionModal());
+                dom.submitReportBtn.addEventListener('click', this.handleSubmit);
+                dom.imageUpload.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        dom.imagePreview.src = URL.createObjectURL(file);
+                    }
+                });
+                dom.closeViewerBtn.addEventListener('click', () => uiModule.closeImageViewer());
+                dom.imageViewerModal.addEventListener('click', (e) => {
+                    if (e.target === dom.imageViewerModal) uiModule.closeImageViewer();
+                });
+
+
+                window.openImageViewer = uiModule.openImageViewer.bind(uiModule);
+                window.openSubmissionModal = uiModule.openSubmissionModal.bind(uiModule);
+            },
+            async handleSubmit() {
+                if (!appState.db) {
+                    console.error("Firestore is not initialized!");
+                    alert("Database connection failed. Please refresh the page.");
+                    return;
+                }
+                if (!appState.currentSubmissionContext) return;
+
+                const file = dom.imageUpload.files[0];
+                const username = dom.username.value.trim() || 'Anonymous';
+                const description = dom.description.value.trim();
+                const dateTaken = dom.dateTaken.value;
+
+                if (!file || !description || !dateTaken) {
+                    alert('Please provide an image, date, and description.');
+                    return;
                 }
 
-                let cityMatch = true;
+                uiModule.toggleModalForm(true);
+                uiModule.closeSubmissionModal();
+                uiModule.showLoading('Compressing image...', true);
+
+                try {
+                    const imageDataUrl = await resizeAndWatermarkImage(file, 800, 800, 0.8, username);
+                    uiModule.showLoading('Uploading report...', true);
+
+                    let reportData = {
+                        username, description, dateTaken, imageDataUrl, createdAt: new Date()
+                    };
+
+                    if (appState.currentSubmissionContext.type === 'earthquake') {
+                        reportData.earthquakeId = appState.currentSubmissionContext.id;
+                    } else if (appState.currentSubmissionContext.type === 'location') {
+                        reportData.latitude = appState.currentSubmissionContext.lat;
+                        reportData.longitude = appState.currentSubmissionContext.lng;
+                        
+                        const address = await apiModule.getAddressFromCoords(reportData.latitude, reportData.longitude);
+                        reportData.countryName = address.countryName;
+                        reportData.city = address.city;
+                    }
+
+                    await firebaseModule.submitReport(reportData, appState.currentSubmissionContext.type);
+                    
+                    uiModule.showLoading('Report submitted!', false);
+                    uiModule.hideLoading(2000);
+                    uiModule.resetSubmissionForm();
+                    mapModule.fetchAndDisplayLocationReports(false);
+
+                } catch (error) {
+                    console.error("Error submitting report: ", error);
+                    uiModule.showLoading('Submission failed. Please try again.', false);
+                    uiModule.hideLoading(3000);
+                } finally {
+                     uiModule.toggleModalForm(false);
+                }
+            },
+            applyFilters() {
+                let filteredEarthquakes = [...appState.allEarthquakes];
+                const selectedCountry = dom.countryFilter.options[dom.countryFilter.selectedIndex].text;
+                const selectedCity = dom.cityFilter.value;
+
+                if (selectedCountry && dom.countryFilter.value) {
+                    filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place?.toLowerCase().includes(selectedCountry.toLowerCase()));
+                }
                 if (selectedCity) {
-                    cityMatch = report.city === selectedCity;
+                     filteredEarthquakes = filteredEarthquakes.filter(eq => eq.properties.place?.toLowerCase().includes(selectedCity.toLowerCase()));
                 }
-
-                if (countryMatch && cityMatch) {
-                    reportsInView.push(report);
-                }
-            });
-            updateLocationReportMarkers(reportsInView, showIndicator);
-        }
-
-        function updateLocationReportMarkers(reports, showIndicator = true) {
-            locationReportMarkers.clearLayers();
-            const iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24px" height="24px"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 6.5 12 6.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>`;
-            const cameraIcon = L.divIcon({
-                html: `<div style="background-color: #4f46e5; border-radius: 50%; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);">${iconHtml}</div>`,
-                className: '',
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-                popupAnchor: [0, -16]
-            });
-
-            reports.forEach(report => {
-                const marker = L.marker([report.latitude, report.longitude], { icon: cameraIcon });
-                marker.reportData = report; // Attach data to marker
-                const popupContent = `
-                    <div style="max-width: 250px;">
-                        <img src="${report.imageDataUrl}" alt="User report" style="width: 200px; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})">
-                        <strong>${report.username}</strong>
-                        <small style="display: block; opacity: 0.8;">Taken on: ${report.dateTaken}</small>
-                        <p>${report.description}</p>
-                    </div>
-                `;
-                marker.bindPopup(popupContent);
-                locationReportMarkers.addLayer(marker);
-            });
-
-            if(showIndicator) {
-                hideLoading();
+                mapModule.updateEarthquakeMarkers(filteredEarthquakes);
+                mapModule.fetchAndDisplayLocationReports();
             }
         };
-        
-        locationReportMarkers.on('clusterclick', function (a) {
-            const markers = a.layer.getAllChildMarkers();
-            let popupContent = '<div class="gallery-popup-container">';
-            markers.forEach(marker => {
-                const report = marker.reportData;
-                popupContent += `<img src="${report.imageDataUrl}" onclick="window.openImageViewer('${report.imageDataUrl}', ${report.latitude}, ${report.longitude})">`;
-            });
-            popupContent += '</div>';
 
-            L.popup()
-                .setLatLng(a.layer.getLatLng())
-                .setContent(popupContent)
-                .openOn(map);
-        });
-
-        function getMagnitudeColor(mag) {
-            if (mag < 3) return '#ff073a'; if (mag < 4) return '#ff9e00'; if (mag < 5) return '#f9ff00';
-            if (mag < 6) return '#39ff14'; if (mag < 7) return '#00f5ff'; if (mag < 8) return '#004dff';
-            if (mag < 9) return '#8f00ff'; if (mag < 10) return '#ff00ff'; return '#ff1493';
+        // --- APP INITIALIZATION ---
+        function startApp() {
+            firebaseModule.init();
+            eventHandlers.init();
+            apiModule.fetchCountryCityData();
+            apiModule.fetchEarthquakes();
         }
-        
-        function getMagnitudeRadius(mag) { return 1 + (Math.floor(mag) * 1.3); }
 
-        // LEGEND CONTROL
-        const legend = L.control({position: 'bottomright'});
-        legend.onAdd = function (map) {
-            const container = L.DomUtil.create('div', 'legend-container');
-            const toggle = L.DomUtil.create('div', '', container);
-            const content = L.DomUtil.create('div', 'legend-content', container);
-            toggle.id = 'legend-toggle';
-            toggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
-            const grades = [0, 3, 4, 5, 6, 7, 8, 9, 10];
-            let contentHTML = '<h4>Magnitude</h4>';
-            grades.forEach((from, i) => {
-                const to = grades[i + 1];
-                contentHTML += `<i style="background:${getMagnitudeColor(from + 0.1)};"></i> ${from}${to ? '&ndash;' + (to - 0.1).toFixed(1) : '+'}<br>`;
-            });
-            contentHTML += '<br><small>Circle size represents magnitude.</small>';
-            content.innerHTML = contentHTML;
-            L.DomEvent.on(toggle, 'click', (e) => { L.DomEvent.stop(e); container.classList.toggle('expanded'); });
-            L.DomEvent.disableClickPropagation(container);
-            return container;
-        };
-        legend.addTo(map);
-
-        // EVENT LISTENERS
-        [startDateEl, endDateEl, minMagEl, maxMagEl].forEach(el => el.addEventListener('change', fetchEarthquakes));
-        countryFilterEl.addEventListener('change', () => {
-            const countryCode = countryFilterEl.value;
-            populateCities(countryCode);
-            if (countryCode) {
-                const country = countriesData.find(c => c.iso2 === countryCode);
-                if (country) map.setView([parseFloat(country.latitude), parseFloat(country.longitude)], 5);
+        function initialCheck() {
+            if (localStorage.getItem('hideWelcomeMessage')) {
+                startApp();
             } else {
-                map.setView([20, 0], 2);
+                uiModule.openWelcomeModal();
+                dom.closeWelcomeBtn.addEventListener('click', () => {
+                    if (dom.dontShowAgainCheck.checked) {
+                        localStorage.setItem('hideWelcomeMessage', 'true');
+                    }
+                    uiModule.closeWelcomeModal();
+                    startApp();
+                }, { once: true });
             }
-            applyFilters();
-        });
-        cityFilterEl.addEventListener('change', applyFilters);
-        refreshBtn.addEventListener('click', fetchEarthquakes);
-        map.on('moveend', fetchAndDisplayLocationReports);
-
-
-        const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("__");
-        if (isConfigured) {
-            try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                
-                signInAnonymously(auth).catch((error) => console.error("Anonymous sign-in failed:", error));
-                
-                fetchAndDisplayLocationReports();
-
-            } catch (e) {
-                console.error("Firebase initialization failed:", e);
-                showLoading('Firebase initialization error.');
-            }
-        } else {
-            console.error("Firebase is not configured.");
-            showLoading('Firebase not configured.');
         }
-
-
-        // --- Make functions globally available for inline event handlers ---
-        window.openImageViewer = openImageViewer;
-        window.openSubmissionModal = openSubmissionModal;
-
-
-        // --- INITIAL LOAD ---
-        fetchCountryCityData();
-        fetchEarthquakes();
+        
+        initialCheck();
 
     </script>
-
 </body>
 </html>
 
