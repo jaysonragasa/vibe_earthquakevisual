@@ -482,8 +482,16 @@
             },
             async fetchEarthquakes() {
                 uiModule.showLoading('Loading earthquake data...', true);
-                const { value: startDate } = dom.startDate, { value: endDate } = dom.endDate, { value: minMag } = dom.minMagnitude, { value: maxMag } = dom.maxMagnitude;
-                const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${startDate}&endtime=${endDate}&minmagnitude=${minMag}&maxmagnitude=${maxMag}`;
+                const { value: startDate } = dom.startDate;
+                const endDateValue = dom.endDate.value;
+                const { value: minMag } = dom.minMagnitude;
+                const { value: maxMag } = dom.maxMagnitude;
+                
+                const endDateObj = new Date(endDateValue);
+                endDateObj.setDate(endDateObj.getDate() + 1);
+                const correctedEndDate = endDateObj.toISOString().split('T')[0];
+
+                const apiUrl = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${startDate}&endtime=${correctedEndDate}&minmagnitude=${minMag}&maxmagnitude=${maxMag}`;
 
                 try {
                     const response = await fetch(apiUrl);
@@ -523,7 +531,18 @@
         const firebaseModule = {
             init() {
                 const firebaseConfig = {
-                    apiKey: "%VITE_FIREBASE_API_KEY%",
+				
+					/*
+                    apiKey: "AIzaSyBzomHwjb9uW_plYI3f-K3VP2NlcPafFZY",
+                    authDomain: "earthquakevisualizer-6ea71.firebaseapp.com",
+                    projectId: "earthquakevisualizer-6ea71",
+                    storageBucket: "earthquakevisualizer-6ea71.appspot.com",
+                    messagingSenderId: "496793186883",
+                    appId: "1:496793186883:web:e8e7c4b9c5e1ec75271af6",
+                    measurementId: "G-GB9JNRHV7M"
+					*/
+					
+					apiKey: "%VITE_FIREBASE_API_KEY%",
                     authDomain: "%VITE_FIREBASE_AUTH_DOMAIN%",
                     projectId: "%VITE_FIREBASE_PROJECT_ID%",
                     storageBucket: "%VITE_FIREBASE_STORAGE_BUCKET%",
